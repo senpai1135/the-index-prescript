@@ -1,0 +1,87 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: #d1f0ff;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 650px;
+    min-height: 480px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.logo-container {
+    margin-bottom: 20px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    width: 120px;
+    height: auto;
+    filter: drop-shadow(0 0 8px rgba(0, 162, 255, 0.8)) drop-shadow(0 0 20px rgba(0, 162, 255, 0.4));
+    transition: transform 0.05s ease;
+}
+
+.prescript-text {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    min-height: 180px;
+    text-shadow: 0 0 5px rgba(210, 240, 255, 0.6), 0 0 12px rgba(0, 162, 255, 0.5);
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.generate-btn {
+    background: transparent;
+    border: 1px solid #00a2ff;
+    color: #00a2ff;
+    padding: 12px 30px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 10px rgba(0, 162, 255, 0.2);
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.generate-btn:hover:not(:disabled) {
+    background-color: rgba(0, 162, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 162, 255, 0.6);
+    text-shadow: 0 0 5px #00a2ff;
+}
+
+.generate-btn:disabled {
+    border-color: #1a2e3b;
+    color: #1a2e3b;
+    cursor: not-allowed;
+    box-shadow: none;
+}
