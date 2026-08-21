@@ -1,1 +1,253 @@
-eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('q 1Y=["2A a 5a 52. r m 51 g. r m 4Z 2e 57 n 5F 1q 4x 4z.","4i-1I 6 9 1z 4g 29 b a 4p 4B.","4P a 1t 4V d 1j g o 8 4U\'s 4M n 4G 4F.","z 9 h b 2g 6 4N, 2M 8 2G 1B d 3y 17 1O l 6 3O.","1e 3a a 2q, 2d 26 3P F P, d 1j 3U 3M a 48.","23 6 9 10 y, b 13 56 l 8 1R 55 5k \'z 5p f 5n.\'","2z \'g 2p h\' l a 4A.","2o w a H 34 d 4y 4r. r m 4j 4k.","4n l 6 9 4W 34 b 54 n, d 4J c 2L 4K.","4L 4I w 6 2X 4H f 6 1d 4D c B 2c 18.","4E o 8 C 4T 2h 1I P 1i 4S Q 4O 4Q.","3c 8 9 4R 4C a 4m. r m 4o a 1t 1J.","4l 8 C M n 8 12 K, d 8 12 M n 8 C K.","2D 1o 2t 4h 4q n b c 6 9 F Y. 4w g n 4s 4t.","z 9 h 1G 4u \'4v\', 4X n \'z 4Y 2w 5s\' d 1N 5u.","5r a 5q 5m 1q 5o 1o 2J 1H, 5v 2v.","23 6 9 5w, b 13 1N 5D 2f a 5E 5C b 2r G a 5B.","32 a 1t 5x o 8 5y. 1F g 5z, b 13 5A 2F c 1Q y.","2o w 6 1d 5l 58 d 2M 2L 4f G a 53 50.","59 2Q l 6 9 5h b 1s. 1F g 5i, 8 5j 2p 39.","5g 37 5f 1S 17 5b. r m 5c g 5d Q 5e.","1A 5G 8 9 1x, 3G o g 3s 3t 6 1S 1i 3r 17.","3n 6 3p 3A 3m b 3x 1w, 17 1O, l 1o 2t 2u.","2A 8 9 3l 2J n 8 3h-4e K 1q 40.","3E 6 38 \'X\' o a N f 1m, 3X g 46 P, d 1J g G a 47 4c.","1y 6 9 4 Y, 1P 4a 2R o 6 3L l 8 C. r m 1g 3J.","Z 6 9 3I 3F, 3N 8 C M n 1G x\'s 12 M.","1e B 44 2T 3S, 2d 2c 3R 27, d 2Z F P.","2k 3Q 2F c 3W 18 3T 6 2C 3H a 3K f 1I.","r m 1g w Q 3V 2l 49 4b 1K 6 4d 3Y 3Z.","42 B 3:15 3w, 3g a 1H N f 1m 3a 2i 3i 3j.","3f 6 9 10 y 3k 8 3e 3D l 6 1d 3z.","2x a 2V 3C-3B n 3v 1D o 6 2a 3u f 8 2s.","r m 2Y Q 3o 3q 6 38 \'E\' c 6 9 5t y.","1M w 6 7i f 8 12 K c 2 y. 7j 6 7h 1E 7g m 1C 7d.","7e 8 2R B 1Q 35 d 1j g 1E 7f 1K a 7k 7l 7r.","7s 6 7q f 8 7p 1x n 8 16 7m 1i 7n 6 7o.","7c o 6 1l d 1P l 37 7b 70. r m 71 Q 2E.","32 a 1J f 6Z o 8 C 6Y d k g 6V 6W.","1e 1w 6X 6 9 2S b 36, 3b 72 2Q.","Z 3d 73, b 13 K a 1H N f 1m l a 39 79.","1M w 6 2U. 1F b 1s a 7a 78 2f 1o 2e, 7u 8 74 c 30 18.","z 9 h b 75 a 1R 76, 7t 8 7W c 2h 2i 18.","7V a 2n o 6 7R n a N f 7U 2l 8 M. 2k G g c a 7T.","1A 1G 29 b c 6 h, 7S 1L 6 2a h, 7X 7Y F Y l g.","7Z 6 9 1z b 1s 80 7P 2G 1B, 7B p b 2m m 7C 1L.","2D a 1t 7D G 8 12 K. r m k 7A f g 1K b 20 7z.","z 9 h b 1s a 7Q 7v, b 13 5H 7x 6 7y b 2r 7E.","2z \'z 7F 2w 7M\' l 6 9 N f 7N b 7O.","7L F H 7K o 7G f 7H 7I. 2x 1L 1C c 6 9 7J.","Z b 77 6T, 2v 6 2u f 8 2q d 66 B F P.","67 8 68 o 6 2s G a 3-3-2 65 c 6 9 1Q y.","r m 2K 8 64 o 8 C K c 6 9 61 y.","z 9 h b 62 8 63, 2K 69 6U 1D d 1P l 6a 17 1O.","1M w 6 1d 2C. 6g 6 2E 6h. 6f 1E 6e 6b 6c.","6d a 60 N f 1m 1S 8 C M d 1N n g c 6 5Z f 6 5N.","5O 26 5P G a 27 2n 1i 5M Q 1R 5L.","1A b 5I 5J 33, 2m m 1g w 8 5K c 6 9 5Q 18.","1y 6 9 22 Y, 5R 5X d 5Y a 5W f 8 5V 5S.","Z 6 9 5T, 2g 8 1x B F 35 d 1j g 1C c 5U y.","1y 6 9 3 Y, 1g w 6 2U d 2Z B 45 P.","1e 1w c 30 2T 6 9 h b 36 a 2S.","3c a 2V f 1D B 7 y 6i b 6j 33 6I.","Z 3d 6J, 6H 6G 6 1B f 6 2X 1z b 2Y l d 6D g."];q 1X="¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß◢◣◤◥■□▲△▼▽";q 1U=1.41;q 14=1.43;q 19=R.1c(\'6E\');q O=R.1c(\'6F\');q 11=R.1c(\'6K\');q A=R.1c(\'6L\');k 1n;k v="";k 1p="";k 1a=3.2P;k 1b=0;O.1v(\'6R\',()=>{O.1u=2H;k W=1p;1q(W===1p){W=1Y[D.1l(D.H()*1Y.1Z)]}v=W;1p=W;A.6S();A.2N=0;1b=0;A.6Q().3b(()=>{1a=A.6P||3.2P;1n=2B(1W)}).6M(2b=>{6N.6O("6C 6B 6p.",2b);O.1u=25})});21 V(16,1k){p(1b%4===0||!1k[16]||1k[16]===" "){20 1X[D.1l(D.H()*1X.1Z)]}20 1k[16]}21 1W(){k h=A.2N;k t="";q S=v.1Z;q T=19.1f;1b++;p(h<1U){11.1h.1r=`6q(${D.H()*4-2}2I,${D.H()*4-2}2I)`;c(k i=0;i<S;i++){p(v[i]===" "){t+=" "}x{t+=V(i,T)}}}x p(h>=1U&&h<14){11.1h.1r=\'1V\';c(k i=0;i<S;i++){t+=(v[i]===" ")?" ":V(i,T)}}x p(h>=14&&h<1a){11.1h.1r=\'1V\';k 2y=(h-14)/(1a-14);k 1T=D.1l(S*2y);c(k i=0;i<S;i++){p(v[i]===" "){t+=" "}x p(i<1T){p(i>1T-5&&D.H()<0.3){t+=V(i,T)}x{t+=v[i]}}x{t+=V(i,T)}}}x{t=v;11.1h.1r=\'1V\'}19.1f=t;p(h<1a&&!A.6r&&!A.6o){1n=2B(1W)}x{19.1f=v;6n(1n);O.1u=25}}R.1v(\'6k\',(e)=>{e.31()});R.1v(\'6l\',(e)=>{p(e.L==="6m"||(e.2W&&e.6s&&(e.L==="I"||e.L==="J"||e.L==="i"||e.L==="j"))||(e.2W&&(e.L==="U"||e.L==="u"))){e.31()}});6t(()=>{q 28=2O.2j();6z;q 24=2O.2j();p(24-28>6A){19.1f="6y 6x: 6u 6v 6w.";O.1u=2H}},7w);',62,497,'||||||the||your|next||you|for|and||of|it|time|||let|to|not|with|on|if|const|Do||currentOutput||targetSentence|at|else|minutes|The|sfx|exactly|left|Math||three|in|random|||hand|key|shoe|piece|button|times|any|document|len|previousText||getGlitchChar|newSelection||hours|Before||logo|right|must|REVEAL_START||index|out|seconds|display|audioEndTime|frameCount|getElementById|nearest|Walk|innerText|look|style|before|leave|currentText|floor|paper|animationFrameId|an|lastSentence|while|transform|see|single|disabled|addEventListener|backward|door|Within|person|When|name|there|water|that|If|someone|blank|five|drop|until|them|Look|walk|loud|count|two|phone|inside|waveFront|SCRAMBLE_END|none|syncSequenceToAudio|glitchChars|prescripts|length|return|function||For|end|false|around|clockwise|start|asks|exact|err|90|turn|eye|like|open|precisely|seven|now|Stand|or|do|circle|Point|is|room|are|table|empty|corner|face|has|Leave|progress|Whisper|Eat|requestAnimationFrame|clock|Carry|numbers|still|full|true|px|entirely|use|its|state|currentTime|performance|00|deeply|window|threshold|paces|sky|glass|ctrlKey|third|speak|blink||preventDefault|Place|this|object|inches|cross|one|letter|complete|into|then|Drink|tomorrow|deepest|Spend|tear|non|equal|strips|whispering|meal|message|Read|words|last|containing|stepping|twice|from|center|lukewarm|PM|received|purpose|wall|text|filled|half|secret|Write|rings|knock|strikes|bell|back|multiple|building|saying|exchange|milk|completely|perfectly|degrees|north|when|without|mirrors|180|fold|fully|sets|blindfolded||At||||four|trash|word|reflective|every|surfaces|can|sun|dominant|color|who|cardboard|High|explain|why|Tie|spoon|Apologize|spill|serious|box|dramatically|utmost|care|says|Hello|Treat|doing|gasp|so|houseplant|question|using|staircase|Hop|context|no|step|intensely|wait|response|Stare|doorstep|fridge|convenience|Buy|store|beverage|entering|foot|neighbor|banana|inanimate|reply|forecast|make|whisper|peel|raw|dramatic|collide|exclusively|refer|contact|fixture|Bow|potato|today|correct|under|circumstance|sock|Wear|cat|meows|instruction|as|light|tune|doom|maintaining|device|cheerful|Hum|changed|fifteen|away|expressionless|hour|coin|head|falls|remain|hallway|whenever|sideways|crab|anyone|opening|instantly|finish|reading|screen|call|answering|day|Spin|once|sixty|breathe|food|sunrise|ten|favorite|bag|normally|eat|rest|small|thirty|wash|hands|thumb|rhythm|nod|Tap|fingers|only|forty|steps|forward|Put|many|Take|Add|together|after|read|contextmenu|keydown|F12|cancelAnimationFrame|ended|blocked|translate|paused|shiftKey|setInterval|DEV|TOOLS|DETECTED|BLOCKED|TRANSMISSION|debugger|100|playback|Audio|shred|prescriptDisplay|generateBtn|down|write|command|afternoon|indexLogo|beeperSfx|catch|console|log|duration|play|click|pause|tonight|cold|dry|naturally|through|wrist|ink|backwards|skip|sigh|noon|eyes|hear|ring|sleep|shaped|stranger|cloud|hundred|Sit|yesterday|Open|way|were|lines|palm|Seek|bird|flies|finger|leaving|house|front|outline|past|Trace|hold|close|car|500|change|direction|home|go|even|know|paperclip|walking|Index|top|each|other|passerby|objects|Stack|spoken|mail|receive|their|red|ground|give|minute|chalk|Draw|breath|but|add|Greet|by'.split('|'),0,{}))
+const prescripts = [
+    { text: "Eat a potato raw. Do not peel it. Do not make eye contact with anyone while doing so.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "High-five the next person who asks you a serious question.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Buy a single banana and leave it on your neighbor's doorstep with no context.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "The next time you open the fridge, state your full name and purpose out loud to the milk.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Walk into a room, turn around completely three times, and leave without saying a word.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "For the next 10 minutes, you must refer to your phone exclusively as 'The device of doom.'", cooldown: { value: 10, unit: 'minutes' } },
+    { text: "Whisper 'it is time' to a houseplant.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Point at a random object and gasp dramatically. Do not explain why.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Apologize to the next inanimate object you collide with, and wait for its response.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Stare intensely at the third step of the nearest staircase for exactly 90 seconds.", cooldown: { value: 90, unit: 'seconds' } },
+    { text: "Hop on your left foot precisely five times before entering any convenience store.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Drink your next beverage using a spoon. Do not spill a single drop.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Tie your left shoe with your right hand, and your right shoe with your left hand.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Carry an empty cardboard box with you for the next three hours. Treat it with utmost care.", cooldown: { value: 3, unit: 'hours' } },
+    { text: "The next time someone says 'Hello', reply with 'The forecast has changed' and walk away.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Hum a cheerful tune while maintaining an entirely blank, expressionless face.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "For the next hour, you must walk sideways like a crab whenever you are in a hallway.", cooldown: { value: 1, unit: 'hours' } },
+    { text: "Place a single coin on your head. If it falls, you must remain still for two minutes.", cooldown: { value: 2, unit: 'minutes' } },
+    { text: "Point at the nearest light fixture and state its color in a dramatic whisper.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Bow deeply to the next cat you see. If it meows, your instruction is complete.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Wear one sock inside out today. Do not correct it under any circumstance.", cooldown: { value: 12, unit: 'hours' } },
+    { text: "When opening your next door, knock on it twice from the inside before stepping out.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Read the last text message you received backward, out loud, to an empty corner.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Eat your next meal entirely with your non-dominant hand while blindfolded.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Write the letter 'X' on a piece of paper, fold it four times, and drop it in a trash can.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Within the next 4 hours, count every window on the building to your left. Do not look back.", cooldown: { value: 4, unit: 'hours' } },
+    { text: "Before the next bell rings, exchange your left shoe with someone else's right shoe.", cooldown: { value: 1, unit: 'hours' } },
+    { text: "Walk exactly 44 paces north, turn 90 degrees clockwise, and blink three times.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Stand perfectly still for 180 seconds when the clock strikes a multiple of five.", cooldown: { value: 180, unit: 'seconds' } },
+    { text: "Do not look at any mirrors or reflective surfaces until the sun fully sets.", cooldown: { value: 6, unit: 'hours' } },
+    { text: "At exactly 3:15 PM, tear a blank piece of paper into seven equal strips.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Spend the next 10 minutes whispering your deepest secret to the nearest wall.", cooldown: { value: 10, unit: 'minutes' } },
+    { text: "Leave a glass half-filled with lukewarm water on the exact center of your table.", cooldown: { value: 1, unit: 'hours' } },
+    { text: "Do not speak any words containing the letter 'E' for the next fifteen minutes.", cooldown: { value: 15, unit: 'minutes' } },
+    { text: "Look at the palm of your right hand for 2 minutes. Seek the lines that were not there yesterday.", cooldown: { value: 2, unit: 'minutes' } },
+    { text: "Open your window exactly two inches and leave it that way until a bird flies past.", cooldown: { value: 2, unit: 'hours' } },
+    { text: "Trace the outline of your front door with your index finger before leaving the house.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Sit on the floor and count to one hundred backwards. Do not skip any numbers.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Place a drop of ink on your left wrist and let it dry naturally.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Walk backward through the next threshold you cross, then sigh deeply.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Before tomorrow noon, you must hand a blank piece of paper to a complete stranger.", cooldown: { value: 12, unit: 'hours' } },
+    { text: "Look at the sky. If you see a cloud shaped like an eye, close your eyes for 30 seconds.", cooldown: { value: 30, unit: 'seconds' } },
+    { text: "The next time you hear a phone ring, hold your breath for precisely seven seconds.", cooldown: { value: 7, unit: 'seconds' } },
+    { text: "Draw a circle on the ground with a piece of chalk or your shoe. Stand in it for a minute.", cooldown: { value: 1, unit: 'minutes' } },
+    { text: "When someone asks you for the time, give them the exact time, but add three hours to it.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Greet the next person you see by their full name, even if you do not know them.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Carry a single paperclip in your right hand. Do not let go of it until you return home.", cooldown: { value: 4, unit: 'hours' } },
+    { text: "The next time you see a red car, you must instantly change the direction you are walking.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Whisper 'The Index has spoken' to the next piece of mail you receive.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Stack three random objects on top of each other. Leave them there for the next passerby.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Before you sleep tonight, face the corner of your room and nod exactly three times.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Tap your fingers on the table in a 3-3-2 rhythm for the next two minutes.", cooldown: { value: 2, unit: 'minutes' } },
+    { text: "Do not use your thumb on your left hand for the next thirty minutes.", cooldown: { value: 30, unit: 'minutes' } },
+    { text: "The next time you wash your hands, use only cold water and count to forty out loud.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Look at the nearest clock. Add the numbers together. Take that many steps forward.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Put a small piece of paper inside your left shoe and walk with it for the rest of the day.", cooldown: { value: 6, unit: 'hours' } },
+    { text: "Spin around once in a clockwise circle before answering any phone call.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "When you finish reading this, do not look at your screen for the next sixty seconds.", cooldown: { value: 60, unit: 'seconds' } },
+    { text: "Within the next 22 hours, breathe normally and eat a bag of your favorite food.", cooldown: { value: 22, unit: 'hours' } },
+    { text: "Before the next sunrise, open your door exactly three inches and leave it there for ten minutes.", cooldown: { value: 10, unit: 'minutes' } },
+    { text: "Within the next 3 hours, look at the sky and blink exactly 45 times.", cooldown: { value: 3, unit: 'hours' } },
+    { text: "Walk backward for 30 paces the next time you cross a threshold.", cooldown: { value: 0, unit: 'seconds' } },
+    { text: "Drink a glass of water exactly 7 minutes after you read this command.", cooldown: { value: 7, unit: 'minutes' } },
+    { text: "Before tomorrow afternoon, write down the name of the third person you speak to and shred it.", cooldown: { value: 12, unit: 'hours' } }
+];
+
+const glitchChars = "¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß◢◣◤◥■□▲△▼▽";
+
+const SCRAMBLE_END = 1.41;
+const REVEAL_START = 1.43;
+
+const display = document.getElementById('prescriptDisplay');
+const button = document.getElementById('generateBtn');
+const logo = document.getElementById('indexLogo');
+const sfx = document.getElementById('beeperSfx');
+
+let animationFrameId;
+let targetSentence = "";
+let lastSentence = "";
+let audioEndTime = 3.00;
+let frameCount = 0;
+let countdownInterval;
+
+function getRemainingTime() {
+    const lockUntil = localStorage.getItem('prescript_lock_until');
+    if (!lockUntil) return 0;
+    const remaining = parseInt(lockUntil) - Date.now();
+    return remaining > 0 ? remaining : 0;
+}
+
+function formatTime(ms) {
+    const totalSecs = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    
+    if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+}
+
+function startUiLockout(remainingMs) {
+    button.disabled = true;
+    const currentPrescript = localStorage.getItem('last_prescript_text') || "Execute your given assignment.";
+    display.innerText = `${currentPrescript}\n\n[ EVALUATING PROXY EXECUTION: ${formatTime(remainingMs)} ]`;
+    
+    if (countdownInterval) clearInterval(countdownInterval);
+    
+    countdownInterval = setInterval(() => {
+        const currentRemaining = getRemainingTime();
+        if (currentRemaining <= 0) {
+            clearInterval(countdownInterval);
+            button.disabled = false;
+            display.innerText = "The evaluation is complete. Click below to receive the Will.";
+            localStorage.removeItem('prescript_lock_until');
+            localStorage.removeItem('last_prescript_text');
+        } else {
+            display.innerText = `${currentPrescript}\n\n[ EVALUATING PROXY EXECUTION: ${formatTime(currentRemaining)} ]`;
+        }
+    }, 1000);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const remaining = getRemainingTime();
+    if (remaining > 0) {
+        startUiLockout(remaining);
+    }
+});
+
+button.addEventListener('click', () => {
+    if (getRemainingTime() > 0) return;
+    
+    button.disabled = true;
+    
+    const filteredPrescripts = prescripts.filter(p => p.text !== lastSentence);
+    const selectedObj = filteredPrescripts[Math.floor(Math.random() * filteredPrescripts.length)];
+    
+    targetSentence = selectedObj.text;
+    lastSentence = selectedObj.text;
+    
+    let cooldownMs = 0;
+    if (selectedObj.cooldown.unit === 'hours') cooldownMs = selectedObj.cooldown.value * 60 * 60 * 1000;
+    if (selectedObj.cooldown.unit === 'minutes') cooldownMs = selectedObj.cooldown.value * 60 * 1000;
+    if (selectedObj.cooldown.unit === 'seconds') cooldownMs = selectedObj.cooldown.value * 1000;
+
+    if (cooldownMs > 0) {
+        localStorage.setItem('prescript_lock_until', Date.now() + cooldownMs);
+        localStorage.setItem('last_prescript_text', targetSentence);
+    }
+    
+    sfx.pause();
+    sfx.currentTime = 0;
+    frameCount = 0;
+    
+    sfx.play().then(() => {
+        audioEndTime = sfx.duration || 3.00;
+        animationFrameId = requestAnimationFrame(syncSequenceToAudio);
+    }).catch(err => {
+        console.log("Audio pipeline blocked by environment. Sequence running visually.", err);
+        audioEndTime = 3.00; 
+        animationFrameId = requestAnimationFrame(syncSequenceToAudio);
+    });
+});
+
+function getGlitchChar(index, currentText) {
+    if (frameCount % 4 === 0 || !currentText[index] || currentText[index] === " ") {
+        return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+    }
+    return currentText[index];
+}
+
+function syncSequenceToAudio() {
+    let time = sfx.currentTime || (frameCount * 0.016); // Fallback clock if audio completely broke
+    let currentOutput = "";
+    const len = targetSentence.length;
+    const previousText = display.innerText;
+    frameCount++;
+
+    if (time < SCRAMBLE_END) {
+        logo.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`;
+        for (let i = 0; i < len; i++) {
+            currentOutput += (targetSentence[i] === " ") ? " " : getGlitchChar(i, previousText);
+        }
+    } 
+    else if (time >= SCRAMBLE_END && time < REVEAL_START) {
+        logo.style.transform = 'none';
+        for (let i = 0; i < len; i++) {
+            currentOutput += (targetSentence[i] === " ") ? " " : getGlitchChar(i, previousText);
+        }
+    } 
+    else if (time >= REVEAL_START && time < audioEndTime) {
+        logo.style.transform = 'none';
+        let progress = (time - REVEAL_START) / (audioEndTime - REVEAL_START); 
+        let waveFront = Math.floor(len * progress);
+
+        for (let i = 0; i < len; i++) {
+            if (targetSentence[i] === " ") {
+                currentOutput += " ";
+            } else if (i < waveFront) {
+                if (i > waveFront - 5 && Math.random() < 0.3) {
+                    currentOutput += getGlitchChar(i, previousText);
+                } else {
+                    currentOutput += targetSentence[i]; 
+                }
+            } else {
+                currentOutput += getGlitchChar(i, previousText);
+            }
+        }
+    } 
+    else {
+        currentOutput = targetSentence;
+        logo.style.transform = 'none';
+    }
+
+    display.innerText = currentOutput;
+
+    const isAudioActive = !sfx.paused && !sfx.ended && sfx.currentTime > 0;
+    if ((isAudioActive || time < audioEndTime) && currentOutput !== targetSentence) {
+        animationFrameId = requestAnimationFrame(syncSequenceToAudio);
+    } else {
+        display.innerText = targetSentence;
+        cancelAnimationFrame(animationFrameId);
+        
+        const remaining = getRemainingTime();
+        if (remaining > 0) {
+            startUiLockout(remaining);
+        } else {
+            button.disabled = false;
+        }
+    }
+}
+
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+document.addEventListener('keydown', (e) => {
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "i" || e.key === "j")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u"))
+    ) {
+        e.preventDefault();
+    }
+});
+
+setInterval(() => {
+    const start = performance.now();
+    debugger; 
+    const end = performance.now();
+    if (end - start > 100) {
+        display.innerText = "TRANSMISSION BLOCKED: DEV TOOLS DETECTED.";
+        button.disabled = true;
+    }
+}, 500);
