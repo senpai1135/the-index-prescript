@@ -55,17 +55,30 @@ When the terminal initializes, decrees are randomized based on past execution hi
 ```text
 ├── 📂 assets/
 │   ├── 📂 audio/
-│   │   └── 🔊 beeper.mp3      # Terminal hardware audio modulation sync
+│   │   ├── 🔊 beeper.mp3      # Terminal hardware audio modulation sync
+│   │   └── 🎵 saikai.mp3      # Hidden transmission, optional local copy (see Secrets)
 │   └── 📂 img/
-│       └── 🖼️ index.png       # Insignia & iconography layers
+│       ├── 🖼️ index.png       # Insignia & iconography layers
+│       └── 🪞 evil_index.png  # The reflection
 ├── 📂 css/
 │   └── 🎨 style.css           # Monochromatic CRT scanline styling & glowing filters
 ├── 📂 js/
-│   └── ⚡ script.js            # Engine code (scramble animation, audio sync, locks)
+│   ├── ⚡ script.js            # Engine code (scramble animation, audio sync, locks)
+│   └── 📜 lyrics.js           # Timestamped (LRC) lyrics for the hidden transmission
 ├── 📄 index.html              # ARIA-accessible Proxy interface shell
 └── 📄 README.md               # Transmission manual
 
 ```
+## 🪞 Secrets
+<details>
+<summary>Spoilers: hidden transmissions</summary>
+
+* **The Mirror:** Tap the insignia 7 times in a row. It shakes harder with every tap, then flips into `evil_index.png`. It is not truly evil: it is a mirror, and its prescripts are kind ones (call your mom, be kind to someone). Tap 7 times again to flip back.
+* **Saikai:** Any Will, normal or mirror, has a small chance (`SAIKAI_CHANCE` in `script.js`) to be a hidden transmission. The song plays with glitching, time-synced lyrics, and the button stays locked until it ends. If `assets/audio/saikai.mp3` exists it plays locally; if the file is missing (e.g. the hosted site or a fresh clone), it falls back to the YouTube video set in `SAIKAI_YT_ID`. Set `SAIKAI_CHANCE` to `1` to test it.
+* **Lyrics:** Paste LRC-format lyrics into `js/lyrics.js`. A timestamp with no text clears the screen for instrumental breaks. If the YouTube version is offset from the mp3, adjust `YT_LYRIC_OFFSET` (seconds) in `script.js`.
+
+</details>
+
 ## 🔒 Security Protocols
 The Proxy Terminal features built-in security intercepts to prevent tampering with divine orders:
 ```javascript
@@ -85,7 +98,7 @@ setInterval(() => {
 ### Local Execution
  1. **Clone repository:**
    ```bash
-   git clone [https://github.com/senpai1135/the-index-prescript.git](https://github.com/senpai1135/the-index-prescript.git)
+   git clone https://github.com/senpai1135/the-index-prescript.git
    
    ```
  2. **Launch Terminal:**
