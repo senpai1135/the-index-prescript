@@ -5,27 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Index - Prescript Generator</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" type="image/png" href="assets/img/index.png">
+    <link rel="icon" id="favicon" type="image/png" href="assets/img/index.png">
 </head>
 <body>
 
-    <div class="container">
-        <div class="logo-container">
-            <img src="assets/img/index.png" alt="The Index Logo" class="logo" id="indexLogo">
+    <div class="container" id="mainContainer">
+        <div class="logo-container" id="logoContainer">
+            <img src="assets/img/index.png" alt="The Index Logo" class="logo" id="indexLogo" draggable="false">
+            <div class="tap-hint" id="tapHint" aria-hidden="true"></div>
         </div>
 
         <div class="prescript-text" id="prescriptDisplay" aria-live="polite">Click below to receive the Will of the Prescript.</div>
 
-        <button class="generate-btn" id="generateBtn">Receive Will</button>
+        <div class="action-area">
+            <button class="generate-btn" id="generateBtn">Receive Will</button>
+            <span class="disclaimer">The Index is not liable for any bananas left on doorsteps.</span>
+        </div>
     </div>
 
     <audio id="beeperSfx" src="assets/audio/beeper.mp3" preload="auto"></audio>
+    
+    <audio id="saikaiSfx" src="assets/audio/saikai.mp3" preload="metadata"></audio>
 
-    <footer style="position: absolute; bottom: 15px; font-size: 0.75rem; color: #1a2e3b; letter-spacing: 1px; display: flex; align-items: center; gap: 4px;">
-      <span>&copy; 2026 Designed by </span>
-      <a href="https://github.com/senpai1135/the-index-prescript" target="_blank" style="color: inherit; text-decoration: none; cursor: default;">senpai1135</a>
+    <div id="ytHolder" class="yt-holder" aria-hidden="true"><div id="ytPlayer"></div></div>
+
+    <footer class="footer">
+        <span class="credit">&copy; 2026 Designed by <a href="https://github.com/senpai1135/the-index-prescript" target="_blank">senpai1135</a></span>
     </footer>
 
+    <script src="js/lyrics.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>
