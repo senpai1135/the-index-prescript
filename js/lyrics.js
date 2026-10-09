@@ -21,7 +21,7 @@ const SAIKAI_LRC = `
 [02:51.89]Protection alone is not enough
 [02:59.63]Providing cannot fill an empty cup thirsting for love
 [03:10.54]I questioned myself a lot-
-[03:18:50]
+[03:18.50]
 [03:43.85]What do I know about love?
 [03:46.95]How can I recreate what I've never had?
 [03:51.91]All I know is that I must keep you thriving
@@ -34,5 +34,5 @@ const SAIKAI_LRC = `
 [04:27.22]Our threads in red can never be cut
 [04:30.64]And S is not for sayonara
 [04:36.07]Will you forgive me at last?
-[04:40:00]
+[04:40.00]
 `;
