@@ -1,4 +1,4 @@
-const SAIKAI_LRC = `
+export const SAIKAI_LRC = `
 [00:30.68]When I was young and lost
 [00:37.49]You showed up and had my doors unlocked
 [00:45.14]Like threads petals unfold
