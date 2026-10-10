@@ -57,7 +57,20 @@ export const ICONS = {
     candle: '<path d="M12 2.5c1.5 2 2 3 2 4a2 2 0 0 1-4 0c0-1 .5-2 2-4z"/><rect x="9" y="10" width="6" height="11" rx="1"/>',
     bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/>',
     phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
-    ghost: '<path d="M5 21V11a7 7 0 0 1 14 0v10l-2.33-2L14.33 21 12 19l-2.33 2L7.33 19z"/><path d="M9.5 11h.01M14.5 11h.01"/>'
+    ghost: '<path d="M5 21V11a7 7 0 0 1 14 0v10l-2.33-2L14.33 21 12 19l-2.33 2L7.33 19z"/><path d="M9.5 11h.01M14.5 11h.01"/>',
+
+    zoomIn: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/>',
+    volumeOff: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l4 6M21 9l-4 6"/>',
+    unplug: '<path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0z"/><path d="M12 16v5"/><path d="M3 3l18 18"/>',
+    refresh: '<path d="M20 11a8 8 0 0 0-14-4L4 9"/><path d="M4 4v5h5"/><path d="M4 13a8 8 0 0 0 14 4l2-2"/><path d="M20 20v-5h-5"/>',
+    wifi: '<path d="M12 20h.01"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/><path d="M5 12.9a10 10 0 0 1 14 0"/><path d="M2 8.8a15 15 0 0 1 20 0"/>',
+    ear: '<path d="M7 9a5 5 0 0 1 10 0c0 3-2 4-3 6a3 3 0 0 1-6 0"/><path d="M12 9a1.5 1.5 0 0 1 3 0"/>',
+    eyeClose: '<path d="M3 12c3 4 6 6 9 6s6-2 9-6"/><path d="M6 16l-2 3M12 18v3M18 16l2 3"/>',
+    wave: '<path d="M2 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/>',
+    ring: '<circle cx="12" cy="14" r="6"/><path d="M9 4h6l2 4H7z"/>',
+    stairs: '<path d="M3 20h5v-5h5v-5h5V5h3"/>',
+    archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/>',
+    door: '<path d="M6 21V4h12v17M4 21h16"/><path d="M14 12h.01"/>'
 };
 
 export const ACHIEVEMENTS = [
@@ -66,6 +79,7 @@ export const ACHIEVEMENTS = [
     { id: 'fifty', icon: 'medal', title: 'Steadfast Proxy', desc: 'Receive 50 Wills.', progress: s => [s.total, 50] },
     { id: 'seventy_five', icon: 'shield', title: 'Unwavering Proxy', desc: 'Receive 75 Wills.', progress: s => [s.total, 75] },
     { id: 'hundred', icon: 'crown', title: 'Tireless Proxy', desc: 'Receive 100 Wills.', progress: s => [s.total, 100] },
+    { id: 'wills250', icon: 'stairs', title: 'Pillar of the Index', desc: 'Receive 250 Wills.', hard: true, progress: s => [s.total, 250] },
     { id: 'all_normal', icon: 'scroll', title: 'Fulfilled Proxy', desc: 'Receive every Will of the Index.', progress: s => [s.seenNormal, s.poolNormal] },
     { id: 'all_mirror', icon: 'heart', title: 'Kind Reflection', desc: 'Receive every Will of the mirror.', progress: s => [s.seenMirror, s.poolMirror] },
     { id: 'both', icon: 'both', title: 'Both Sides of the Glass', desc: 'Complete every Will on both sides.', progress: s => [s.seenNormal + s.seenMirror, s.poolNormal + s.poolMirror] },
@@ -77,6 +91,10 @@ export const ACHIEVEMENTS = [
 
     { id: 'streak3', icon: 'flame', title: 'Daily Duty', desc: 'Receive a Will 3 days in a row.', progress: s => [s.streak, 3] },
     { id: 'streak7', icon: 'flame', title: 'Weekly Duty', desc: 'Receive a Will 7 days in a row.', progress: s => [s.streak, 7] },
+    { id: 'streak14', icon: 'flame', title: 'Fortnight of Duty', desc: 'Receive a Will 14 days in a row.', progress: s => [s.streak, 14] },
+    { id: 'streak30', icon: 'hourglass', title: 'A Month Without Fail', desc: 'Receive a Will 30 days in a row.', hard: true, progress: s => [s.streak, 30] },
+    { id: 'witching', icon: 'moon', title: 'The Witching Minute', desc: 'Receive a Will at 3:33 AM.', secret: true, hard: true, hint: 'There is an hour when the building stops pretending.' },
+    { id: 'friday13', icon: 'calendar', title: 'Unlucky Proxy', desc: 'Receive a Will on Friday the 13th.', secret: true, hint: 'The Index checks the calendar for omens.' },
     { id: 'night_owl', icon: 'moon', title: 'Night Owl', desc: 'Receive a Will between midnight and 4 AM.', secret: true, hint: 'Some Wills are best received in the dark.' },
     { id: 'early_bird', icon: 'sunrise', title: 'Early Bird', desc: 'Receive a Will between 4 AM and 7 AM.', secret: true, hint: 'The Index is awake before the sun.' },
     { id: 'time_will', icon: 'clock', title: 'Right on Schedule', desc: 'Receive a Will bound to the time of day.', secret: true, hint: 'The Index keeps appointments.' },
@@ -92,17 +110,23 @@ export const ACHIEVEMENTS = [
     { id: 'fine_read_mirror', icon: 'bookmark', title: 'Every Reflection', desc: 'See every disclaimer of the mirror.', secret: true, hint: 'The mirror has a lot to disclaim.', progress: s => [s.discSeenMirror, s.discTotalMirror] },
     { id: 'time_all', icon: 'sun', title: 'Keeper of Hours', desc: 'Receive all five time-of-day Wills.', secret: true, hint: 'The Index keeps five appointments.', progress: s => [s.timeSeen, s.timeTotal] },
     { id: 'duet', icon: 'duet', title: 'Duet', desc: 'Hear Saikai from both sides of the glass.', secret: true, hint: 'Both worlds know the song.', progress: s => [s.saikaiSides, 2] },
+    { id: 'archive', icon: 'archive', title: 'The Whole Index', desc: 'Every Will, every clause, every hour and Saikai on both sides: complete the archive.', secret: true, hard: true, hint: 'Nothing left unread, unheard or undone.', progress: s => [s.archSeen, s.archTotal] },
 
     { id: 'poke', icon: 'alert', title: 'Please Do Not Poke', desc: 'Poke the Index three times in a row.' },
     { id: 'impatient', icon: 'hourglass', title: 'Impatient Proxy', desc: 'Press Receive Will 10 times while it is locked.', secret: true, hint: 'Patience is also a duty.' },
     { id: 'idle', icon: 'pause', title: 'The Watcher', desc: 'Watch the Index for 10 minutes without touching anything.', secret: true, hint: 'Some proxies only watch.' },
+    { id: 'idle30', icon: 'eyeClose', title: 'The Long Watch', desc: 'Watch the Index for 30 minutes without touching anything.', secret: true, hard: true, hint: 'Some proxies never blink.' },
     { id: 'konami', icon: 'gamepad', title: 'Unauthorized Input', desc: 'Enter the old code. Keys: up up down down left right left right B A. Touch: swipe the same, then tap twice.', secret: true, hint: 'The old world had its codes.' },
     { id: 'mirror', icon: 'mirror', title: 'Through the Glass', desc: 'Discover the mirror world.', secret: true, hint: 'The insignia is more than a picture.' },
     { id: 'return', icon: 'back', title: 'Back to the Index', desc: 'Return from the mirror.', secret: true, hint: 'What goes through must come back.' },
     { id: 'flipper', icon: 'swap', title: 'Restless Reflection', desc: 'Cross the glass six times.', secret: true, hint: 'Some proxies cannot pick a side.', progress: s => [s.flips, 6] },
+    { id: 'refresher', icon: 'refresh', title: 'Have You Tried Turning It Off?', desc: 'Reload the page 5 times within a minute.', secret: true, hint: 'The Index does not enjoy being asked twice.' },
+    { id: 'absence', icon: 'hourglass', title: 'The Index Waited', desc: 'Leave the page open in the background for 30 minutes, then come back.', secret: true, hint: 'It does not mind. It counted.' },
+    { id: 'online_again', icon: 'wifi', title: 'Signal Restored', desc: 'Reconnect after losing your connection.', secret: true, hint: 'What was lost can be found. Sometimes.' },
 
     { id: 'mirror10', icon: 'sprout', title: 'Gentle Habit', desc: 'Receive 10 different Wills of the mirror.', secret: true, hint: 'The glass has more to say.', progress: s => [s.seenMirror, 10] },
     { id: 'mirror_stay', icon: 'candle', title: 'Stay Awhile', desc: 'Stay on the mirror side for 5 minutes.', secret: true, hint: 'The mirror enjoys company.' },
+    { id: 'mirror_stay30', icon: 'candle', title: 'Long Gaze', desc: 'Stay on the mirror side for 30 minutes.', secret: true, hard: true, hint: 'The mirror will keep looking if you do.' },
     { id: 'mirror_time', icon: 'bell', title: 'Gentle Hour', desc: 'Receive a time-of-day Will from the mirror.', secret: true, hint: 'Even the mirror keeps appointments.' },
     { id: 'mirror_mom', icon: 'phone', title: 'Call Your Mom', desc: 'Receive the mirror\'s call-your-mom Will.', secret: true, hint: 'Some Wills are simply good advice.' },
 
@@ -110,12 +134,22 @@ export const ACHIEVEMENTS = [
     { id: 'saikai', icon: 'note', title: 'Hidden Transmission', desc: 'Listen to Saikai until the end.', secret: true, hint: 'Some songs must be heard to the end.' },
     { id: 'saikai_mirror', icon: 'headphones', title: 'The Mirror Sings', desc: 'Listen to Saikai from the mirror side.', secret: true, hint: 'The glass hums a tune too.' },
     { id: 'saikai_lost', icon: 'noteOff', title: 'Dead Air', desc: 'Lose the transmission before it could play.', secret: true, hint: 'Not every song reaches you.' },
+    { id: 'saikai_cut', icon: 'unplug', title: 'Pulled the Plug', desc: 'Stop Saikai by leaving or refreshing the page while it plays.', secret: true, hint: 'You can walk out on a transmission. It will remember.' },
+    { id: 'saikai_cut_mirror', icon: 'door', title: 'Walked Out on the Mirror', desc: 'Stop Saikai by leaving or refreshing the page on the mirror side.', secret: true, hint: 'The glass hums even when no one is listening.' },
+    { id: 'saikai_x5', icon: 'wave', title: 'Resonance', desc: 'Listen to Saikai until the end 5 times.', secret: true, hard: true, hint: 'Some songs only start to make sense the fifth time.', progress: s => [s.saikaiPlays, 5] },
+    { id: 'silent_saikai', icon: 'volumeOff', title: 'The Silent Listener', desc: 'Let Saikai play to the end with the sound turned off.', secret: true, hint: 'You can listen without hearing. The Index will ask why.' },
+
+    { id: 'zoom_close', icon: 'zoomIn', title: 'Too Close for Comfort', desc: 'Zoom in to 300% or more.', secret: true, hint: 'The Index has a personal space. You are in it.' },
+    { id: 'zoom_eye', icon: 'eye', title: 'Eye to Eye', desc: 'Zoom in to 300% or more with the insignia at the center of your view.', secret: true, hint: 'Look it straight in the eye. Get closer.' },
+    { id: 'zoom_max', icon: 'search', title: 'Pressed Against the Glass', desc: 'Zoom in to 500% or more.', secret: true, hard: true, hint: 'There is a limit to how close you can get. Find it.' },
+    { id: 'silent_will', icon: 'ear', title: 'What Are You Hiding?', desc: 'Receive a Will with the sound turned all the way off.', secret: true, hint: 'The Index can tell when you stop listening.' },
 
     { id: 'trophy_tap', icon: 'sparkle', title: 'Trophy Polisher', desc: 'Tap the trophy 15 times in a row.', secret: true, hint: 'Some trophies like attention.' },
+    { id: 'trophy_open', icon: 'trophy', title: 'Admiring the Collection', desc: 'Open this card 20 times in one visit.', secret: true, hint: 'It is allowed to look at what you have earned. Repeatedly.' },
 
     { id: 'offline', icon: 'wifiOff', title: 'Signal Lost', desc: 'Lose your connection to the Index.', secret: true, hint: 'The Index hears when you disconnect.' },
     { id: 'peek', icon: 'search', title: 'Curious Proxy', desc: 'Try to look behind the Index.', secret: true, hint: 'The Index notices curious fingers.' },
-    { id: 'devtools', icon: 'code', title: 'Caught Peeking', desc: 'Open the developer tools.', secret: true, hard: true, hint: 'Not everything is meant to be inspected.' },
+    { id: 'devtools', icon: 'code', title: 'Caught Peeking', desc: 'Open the developer tools, or tap the fine print 7 times in a row.', secret: true, hard: true, hint: 'Not everything is meant to be inspected. Some peeking needs no tools at all.' },
     { id: 'missing_piece', icon: 'brokenFrame', title: 'Missing Piece', desc: 'Remove one of the Index\'s insignia.', secret: true, hard: true, hint: 'A picture can be more than decoration.' },
     { id: 'credits', icon: 'link', title: 'Behind the Curtain', desc: 'Follow the designer\'s link in the footer.', secret: true, hint: 'Even the fine print has a face.' },
     { id: 'faceless', icon: 'ghost', title: 'Faceless', desc: 'Receive a Will after both insignia are gone.', secret: true, hard: true, hint: 'A Will needs no face.' }
@@ -127,11 +161,12 @@ export const FORBIDDEN = [
     { id: 'cheat_repent', icon: 'feather', title: 'Honest Work', desc: 'Receive a Will after being caught.', forbidden: true }
 ];
 
-export const SEAL_KEYS = [
+const LEGACY_SEAL_KEYS = [
     'index_ach', 'index_total', 'index_flips', 'index_daily', 'index_streak',
     'index_seen_normal', 'index_seen_evil', 'index_echoes', 'index_echo_sides', 'index_echo_run',
     'index_disc_seen_normal', 'index_disc_seen_evil', 'index_timewills', 'index_saikai_sides', 'index_caught_total'
 ];
+export const SEAL_KEYS = [...LEGACY_SEAL_KEYS, 'index_saikai_plays'];
 const SEAL_SALT = 'the-index-will-be-fulfilled';
 
 function hashString(str, seed = 0) {
@@ -189,7 +224,7 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
     function stats() {
         const nTexts = poolTexts('normal'), mTexts = poolTexts('evil');
         const nSeen = seenList('normal'), mSeen = seenList('evil');
-        return {
+        const out = {
             total: num(store.get('index_total', 0)),
             flips: num(store.get('index_flips', 0)),
             streak: currentStreak(),
@@ -207,8 +242,14 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
             discSeenMirror: distinctIn('index_disc_seen_evil', new Set(disclaimers.evil || [])),
             timeTotal: new Set(pools.time || []).size,
             timeSeen: distinctIn('index_timewills', new Set(pools.time || [])),
-            saikaiSides: distinctIn('index_saikai_sides')
+            saikaiSides: distinctIn('index_saikai_sides'),
+            saikaiPlays: num(store.get('index_saikai_plays', 0))
         };
+        out.archTotal = out.poolNormal + out.poolMirror + out.discTotalNormal + out.discTotalMirror + out.timeTotal + 2;
+        out.archSeen = Math.min(out.seenNormal, out.poolNormal) + Math.min(out.seenMirror, out.poolMirror) +
+            Math.min(out.discSeenNormal, out.discTotalNormal) + Math.min(out.discSeenMirror, out.discTotalMirror) +
+            Math.min(out.timeSeen, out.timeTotal) + Math.min(out.saikaiSides, 2);
+        return out;
     }
 
     const isOpen = () => !!panel && panel.classList.contains('open');
@@ -269,8 +310,10 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
         }
     }
 
+    let cardOpens = 0;
     function toggle(open = !isOpen()) {
         if (!panel) return;
+        if (open && !isOpen() && ++cardOpens >= 20) unlock('trophy_open');
         panel.classList.toggle('open', open);
         if (btn) btn.setAttribute('aria-expanded', String(open));
         panel.setAttribute('aria-hidden', String(!open));
@@ -332,12 +375,15 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
         if (s.total >= 50) unlock('fifty');
         if (s.total >= 75) unlock('seventy_five');
         if (s.total >= 100) unlock('hundred');
+        if (s.total >= 250) unlock('wills250');
         if (s.today >= 5) unlock('day5');
         if (s.today >= 10) unlock('day10');
         if (s.today >= 20) unlock('day20');
         if (s.today >= 30) unlock('day30');
         if (s.streak >= 3) unlock('streak3');
         if (s.streak >= 7) unlock('streak7');
+        if (s.streak >= 14) unlock('streak14');
+        if (s.streak >= 30) unlock('streak30');
         const doneNormal = s.poolNormal > 0 && s.seenNormal >= s.poolNormal;
         const doneMirror = s.poolMirror > 0 && s.seenMirror >= s.poolMirror;
         if (doneNormal) unlock('all_normal');
@@ -353,14 +399,18 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
         if (s.discTotalMirror > 0 && s.discSeenMirror >= s.discTotalMirror) unlock('fine_read_mirror');
         if (s.timeTotal > 0 && s.timeSeen >= s.timeTotal) unlock('time_all');
         if (s.saikaiSides >= 2) unlock('duet');
+        if (s.saikaiPlays >= 5) unlock('saikai_x5');
+        if (s.archTotal > 0 && s.archSeen >= s.archTotal) unlock('archive');
         if (unlocked.cheat_caught && s.total > num(store.get('index_caught_total', 0))) unlock('cheat_repent');
         if (extra.faceless) unlock('faceless');
         render();
     }
 
     let inspecting = false;
-    const snapshot = () => SEAL_KEYS.map(k => `${k}=${JSON.stringify(store.get(k, null))}`).join('|');
-    const sealValue = () => hashString(SEAL_SALT + snapshot());
+    const snapshotOf = (keys) => keys.map(k => `${k}=${JSON.stringify(store.get(k, null))}`).join('|');
+    const sealValue = () => hashString(SEAL_SALT + snapshotOf(SEAL_KEYS));
+    const legacySealValue = () => hashString(SEAL_SALT + snapshotOf(LEGACY_SEAL_KEYS));
+    const newKeysUntouched = () => SEAL_KEYS.filter(k => !LEGACY_SEAL_KEYS.includes(k)).every(k => store.get(k, null) === null);
     const writeSeal = () => store.set('index_seal', sealValue());
 
     function looksBulk(map) {
@@ -379,6 +429,8 @@ export function createAchievements({ store, pools = {}, disclaimers = {}, playSo
         try {
             const saved = store.get('index_seal', null);
             if (saved === null) {
+                writeSeal();
+            } else if (saved !== sealValue() && saved === legacySealValue() && newKeysUntouched()) {
                 writeSeal();
             } else if (saved !== sealValue()) {
                 const before = new Set(Object.keys(unlocked).filter(id => mainIds.has(id)));
