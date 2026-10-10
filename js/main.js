@@ -18,6 +18,19 @@ const IMPATIENT_GAP_MS = 2000;
 const SWIPE_MIN_PX = 40;
 const KONAMI_STEP_MS = 3000;
 const MIRROR_STAY_MS = 5 * 60 * 1000;
+const MIRROR_STAY_LONG_MS = 30 * 60 * 1000;
+const IDLE_LONG_MS = 30 * 60 * 1000;
+
+const SAIKAI_BEAT_MS = 2000;
+const SAIKAI_STALE_MS = 15000;
+
+const ZOOM_CLOSE_AT = 3;
+const ZOOM_MAX_AT = 4.9;
+
+const RELOAD_WINDOW_MS = 60 * 1000;
+const RELOAD_GOAL = 5;
+const ABSENCE_NOTICE_MS = 10 * 60 * 1000;
+const ABSENCE_GOAL_MS = 30 * 60 * 1000;
 
 const MISSING_ASSET_GLITCH = true;
 
@@ -81,6 +94,30 @@ const saikaiPrescripts = {
 const disclaimers = cleanLines(willsMod?.disclaimers, "The Index accepts no responsibility for anything.");
 const mirrorDisclaimers = cleanLines(willsMod?.mirrorDisclaimers, "The glass is warm. This is normal.");
 const SAIKAI_LRC = typeof lyricsMod?.SAIKAI_LRC === 'string' ? lyricsMod.SAIKAI_LRC : '';
+
+const adaptWillText = typeof willsMod?.adaptWillText === 'function' ? willsMod.adaptWillText : (t) => t;
+function showable(text) {
+    try { const out = adaptWillText(text); return (typeof out === 'string' && out.trim()) ? out : text; }
+    catch (err) { return text; }
+}
+const interruptLines = {
+    normal: { started: "The transmission was cut. The Index noticed who left.", pending: "You left before it began. The Index had already started to speak." },
+    evil: { started: "You left in the middle of the song. The glass kept humming without you.", pending: "You left before the song began. The mirror is still waiting." },
+    ...(willsMod?.interruptLines || {})
+};
+const interruptDisclaimers = {
+    normal: "The Index does not forget who closed the door during the transmission.",
+    evil: "The mirror held the last note for you. It will not hold it forever.",
+    ...(willsMod?.interruptDisclaimers || {})
+};
+const volumeJudgements = {
+    normal: cleanLines(willsMod?.volumeJudgements?.normal, "Zero percent. What are you hiding from the silence?"),
+    evil: cleanLines(willsMod?.volumeJudgements?.evil, "The glass is not offended. It only wonders what you were afraid to hear.")
+};
+const zoomLines = (Array.isArray(willsMod?.zoomLines) ? willsMod.zoomLines : [
+    { at: 2, text: "Closer." }, { at: 3, text: "The Index can feel your breath on the glass." },
+    { at: 4, text: "This is much too close. It is looking back." }, { at: 4.9, text: "There is nothing left to see. Only you, in the glass." }
+]).filter(l => l && Number.isFinite(l.at) && typeof l.text === 'string').sort((a, b) => a.at - b.at);
 
 const pairMap = { normal: new Map(), evil: new Map() };
 ['normal', 'evil'].forEach(side => {
@@ -149,6 +186,7 @@ const disclaimerEl = el('disclaimer');
 
 let animationFrameId;
 let targetSentence = "";
+let canonicalSentence = "";
 let lastSentence = "";
 let audioEndTime = 3.00;
 let frameCount = 0;
@@ -632,7 +670,10 @@ function trackWill(mode, text, info = {}) {
     bumpStreak();
     bumpDaily();
 
-    const hour = new Date().getHours();
+    const stamp = new Date();
+    const hour = stamp.getHours();
+    if (hour === 3 && stamp.getMinutes() === 33) ach.unlock('witching');
+    if (stamp.getDay() === 5 && stamp.getDate() === 13) ach.unlock('friday13');
     if (hour < 4) ach.unlock('night_owl');
     else if (hour < 7) ach.unlock('early_bird');
     if (info.timeWill) ach.unlock('time_will');
@@ -703,6 +744,7 @@ button.addEventListener('click', () => {
         receiveWill();
     } catch (err) {
         console.error('[Index] The Will could not be delivered.', err);
+        clearSaikaiLive();
         revealing = false;
         clearTimeout(revealWatchdog);
         cancelAnimationFrame(animationFrameId);
@@ -736,9 +778,13 @@ function receiveWill() {
     }
 
     pendingSaikai = selectedObj.special === 'saikai';
-    if (pendingSaikai) prepareSaikaiSource();
-    targetSentence = selectedObj.text;
+    if (pendingSaikai) {
+        prepareSaikaiSource();
+        markSaikaiLive('pending', mode);
+    }
+    canonicalSentence = selectedObj.text;
     lastSentence = selectedObj.text;
+    targetSentence = showable(selectedObj.text);
 
     const cooldownMs = cooldownToMs(selectedObj.cooldown);
     revealCooldownMs = cooldownMs;
@@ -882,12 +928,12 @@ function finishReveal() {
         return;
     }
 
-    commitPrescript(revealMode, targetSentence);
+    commitPrescript(revealMode, canonicalSentence);
     const timed = pendingTimeWill;
     pendingTimeWill = null;
     if (timed) store.set(timed.key, timed.today);
-    const echo = (pairMap[revealMode].get(lastDisclaimer) || []).includes(targetSentence);
-    trackWill(revealMode, targetSentence, { timeWill: !!timed, timeWillId: timed && timed.id, echo, cooldownMs: revealCooldownMs });
+    const echo = (pairMap[revealMode].get(lastDisclaimer) || []).includes(canonicalSentence);
+    trackWill(revealMode, canonicalSentence, { timeWill: !!timed, timeWillId: timed && timed.id, echo, cooldownMs: revealCooldownMs });
 
     const remaining = getRemainingTime();
     if (remaining > 0) {
@@ -896,6 +942,11 @@ function finishReveal() {
         button.disabled = blocked;
     }
     setBusy(false);
+
+    if (soundIsOff(false)) {
+        ach.unlock('silent_will');
+        holdMessage(pickJudgement(), 6000);
+    }
 }
 
 function parseLrc(raw) {
@@ -923,6 +974,104 @@ let saikaiCap;
 let lastSongT = -1;
 let lastSongMove = 0;
 let offlineTimer;
+
+const SAIKAI_LIVE_KEY = 'index_saikai_live';
+const SAIKAI_CUT_KEY = 'index_saikai_cut';
+let saikaiLive = null;
+let saikaiBeat = null;
+
+function readFlag(key) {
+    try { const v = rawStore.get(key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+}
+function writeLive() {
+    if (!saikaiLive) return;
+    rawStore.set(SAIKAI_LIVE_KEY, JSON.stringify({ side: saikaiLive.side, phase: saikaiLive.phase, beat: Date.now() }));
+}
+function markSaikaiLive(phase, side = currentMode()) {
+    saikaiLive = { side, phase };
+    writeLive();
+    clearInterval(saikaiBeat);
+    saikaiBeat = setInterval(writeLive, SAIKAI_BEAT_MS);
+}
+function clearSaikaiLive() {
+    saikaiLive = null;
+    clearInterval(saikaiBeat);
+    rawStore.remove(SAIKAI_LIVE_KEY);
+}
+function writeSaikaiCut() {
+    if (!saikaiLive) return;
+    rawStore.set(SAIKAI_CUT_KEY, JSON.stringify({ side: saikaiLive.side, phase: saikaiLive.phase, t: Date.now() }));
+}
+
+function consumeSaikaiCut() {
+    const cut = readFlag(SAIKAI_CUT_KEY);
+    const live = readFlag(SAIKAI_LIVE_KEY);
+    const okSide = (o) => o && (o.side === 'normal' || o.side === 'evil');
+    let hit = null;
+    if (okSide(cut)) hit = cut;
+    else if (okSide(live) && Date.now() - numberOf(live.beat) > SAIKAI_STALE_MS) hit = live;
+    if (cut) rawStore.remove(SAIKAI_CUT_KEY);
+    if (hit) rawStore.remove(SAIKAI_LIVE_KEY);
+    return hit;
+}
+
+function cutLine(side, phase) {
+    const set = interruptLines[side] || interruptLines.normal;
+    return (phase === 'pending' ? set.pending : set.started) || set.started || "The transmission was cut.";
+}
+
+function applySaikaiCut(hit) {
+    const side = hit.side === 'evil' ? 'evil' : 'normal';
+    ach.unlock(side === 'evil' ? 'saikai_cut_mirror' : 'saikai_cut');
+    ach.evaluate();
+    glitchBurst(2800);
+    holdMessage(cutLine(side, hit.phase), 7500);
+}
+
+function soundIsOff(forSong) {
+    try {
+        if (forSong && songSource === 'youtube' && ytPlayer) {
+            if (typeof ytPlayer.isMuted === 'function' && ytPlayer.isMuted()) return true;
+            return typeof ytPlayer.getVolume === 'function' && ytPlayer.getVolume() === 0;
+        }
+        const node = forSong ? song : sfx;
+        return !!node && (node.muted === true || node.volume === 0);
+    } catch (e) { return false; }
+}
+
+const pickJudgement = () => {
+    const list = volumeJudgements[isEvil ? 'evil' : 'normal'];
+    return list[Math.floor(Math.random() * list.length)];
+};
+
+let judgeUntil = 0;
+let judgeText = "";
+let silenceTimer;
+let silenceSamples = 0;
+let silentSamples = 0;
+let silenceJudged = false;
+
+function judgeSaikaiSilence() {
+    if (silenceJudged || !saikaiActive) return;
+    silenceJudged = true;
+    judgeText = pickJudgement();
+    judgeUntil = performance.now() + 6000;
+}
+
+function startSilenceWatch() {
+    clearInterval(silenceTimer);
+    silenceSamples = 0;
+    silentSamples = 0;
+    silenceJudged = false;
+    silenceTimer = setInterval(() => {
+        if (!saikaiActive) return;
+        silenceSamples++;
+        if (soundIsOff(true)) {
+            silentSamples++;
+            if (silentSamples >= 3) judgeSaikaiSilence();
+        }
+    }, 1000);
+}
 
 function randGlitch() {
     return glitchChars[Math.floor(Math.random() * glitchChars.length)];
@@ -1053,6 +1202,8 @@ function beginLyrics() {
     lastSongT = -1;
     lastSongMove = performance.now();
     scheduleBurst(performance.now());
+    if (saikaiLive) { saikaiLive.phase = 'started'; writeLive(); }
+    startSilenceWatch();
     lyricFrame = requestAnimationFrame(lyricLoop);
 }
 
@@ -1128,6 +1279,13 @@ function lyricLoop(now) {
         return;
     }
 
+    if (now < judgeUntil) {
+        applyGlitchState(false);
+        display.innerText = judgeText;
+        lyricFrame = requestAnimationFrame(lyricLoop);
+        return;
+    }
+
     let idx = -1;
     for (let i = lyrics.length - 1; i >= 0; i--) {
         if (lyrics[i].time <= t) { idx = i; break; }
@@ -1168,12 +1326,15 @@ function lyricLoop(now) {
     lyricFrame = requestAnimationFrame(lyricLoop);
 }
 
-function endSaikai(completed) {
+function endSaikai(completed, reason) {
     if (!saikaiSession) return;
     saikaiSession = false;
     saikaiActive = false;
     clearTimeout(saikaiCap);
     clearTimeout(offlineTimer);
+    clearInterval(silenceTimer);
+    judgeUntil = 0;
+    clearSaikaiLive();
     cancelAnimationFrame(lyricFrame);
     display.classList.remove('lyric-mode', 'glitching');
     logo.classList.remove('glitching');
@@ -1187,6 +1348,8 @@ function endSaikai(completed) {
 
     if (completed) {
         ach.unlock('saikai');
+        store.set('index_saikai_plays', numberOf(store.get('index_saikai_plays', 0)) + 1);
+        if (silenceSamples >= 20 && silentSamples >= silenceSamples * 0.9) ach.unlock('silent_saikai');
         const sides = store.get('index_saikai_sides', []);
         const side = isEvil ? 'evil' : 'normal';
         if (!sides.includes(side)) store.set('index_saikai_sides', [...sides, side]);
@@ -1195,6 +1358,11 @@ function endSaikai(completed) {
         display.innerText = isEvil
             ? "Thank you for staying. You may go now."
             : "The transmission is complete. You may proceed.";
+    } else if (reason === 'cut') {
+        const side = isEvil ? 'evil' : 'normal';
+        ach.unlock(side === 'evil' ? 'saikai_cut_mirror' : 'saikai_cut');
+        ach.evaluate();
+        display.innerText = cutLine(side, 'started');
     } else {
         ach.unlock('saikai_lost');
         display.innerText = navigator.onLine === false
@@ -1212,9 +1380,32 @@ song.addEventListener('pause', () => {
     if (saikaiActive && songSource === 'local' && !song.ended) song.play().catch(() => {});
 });
 
+song.addEventListener('volumechange', () => { if (saikaiActive && songSource === 'local' && soundIsOff(true)) judgeSaikaiSilence(); });
+
 document.addEventListener('visibilitychange', () => { lastSongMove = performance.now(); });
 
+window.addEventListener('pagehide', (e) => {
+    try {
+        writeSaikaiCut();
+        if (!e.persisted) rawStore.remove(HIDDEN_KEY);
+    } catch (err) { }
+});
+window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    rawStore.remove(SAIKAI_CUT_KEY);
+    if (saikaiSession) endSaikai(false, 'cut');
+    else if (saikaiLive) clearSaikaiLive();
+});
+
+let wasOffline = navigator.onLine === false;
+window.addEventListener('online', () => {
+    if (!wasOffline) return;
+    wasOffline = false;
+    ach.unlock('online_again');
+    holdMessage(isEvil ? "The glass found you again. It was never gone." : "[ SIGNAL RESTORED ] The Index kept your place.", 3200);
+});
 window.addEventListener('offline', () => {
+    wasOffline = true;
     ach.unlock('offline');
     if (saikaiSession && songSource === 'youtube') {
         clearTimeout(offlineTimer);
@@ -1259,6 +1450,7 @@ logo.addEventListener('error', () => {
 function setMode(evil) {
     isEvil = evil;
     mirrorMs = 0;
+    mirrorLongFired = false;
     store.set('index_flips', numberOf(store.get('index_flips', 0)) + 1);
     ach.unlock(evil ? 'mirror' : 'return');
     ach.evaluate();
@@ -1298,10 +1490,16 @@ logo.addEventListener('animationend', (e) => {
 
 
 let mirrorMs = 0;
+let mirrorLongFired = false;
 setInterval(() => {
     if (!isEvil || document.hidden) return;
     mirrorMs += 1000;
     if (mirrorMs >= MIRROR_STAY_MS) ach.unlock('mirror_stay');
+    if (mirrorMs >= MIRROR_STAY_LONG_MS && !mirrorLongFired) {
+        mirrorLongFired = true;
+        ach.unlock('mirror_stay30');
+        holdMessage("Thirty minutes in the glass. The reflection has started to wonder which of you is the real one.", 6000);
+    }
 }, 1000);
 
 function flipLogo() {
@@ -1453,8 +1651,10 @@ function holdMessage(text, ms) {
 
 let idleMs = 0;
 let idleFired = false;
+let idleLongFired = false;
 function wake() {
     idleMs = 0;
+    idleLongFired = false;
     if (idleFired) {
         idleFired = false;
         holdText = false;
@@ -1472,6 +1672,13 @@ setInterval(() => {
         holdMessage(isEvil
             ? "Ten quiet minutes. Thank you for sitting with me."
             : "Ten minutes. You did not look away. Neither did the Index.");
+    }
+    if (idleMs >= IDLE_LONG_MS && !idleLongFired) {
+        idleLongFired = true;
+        ach.unlock('idle30');
+        holdMessage(isEvil
+            ? "Thirty minutes of watching. The glass is no longer sure who is the reflection."
+            : "Thirty minutes. The Index has begun to wonder who is watching whom.");
     }
 }, 1000);
 
@@ -1591,6 +1798,31 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+const PEEK_TAPS = 7;
+const PEEK_GAP_MS = 1500;
+let peekTaps = 0;
+let lastPeekTap = 0;
+let peekHintTimer;
+disclaimerEl.addEventListener('click', () => {
+    const now = Date.now();
+    peekTaps = (now - lastPeekTap > PEEK_GAP_MS) ? 1 : peekTaps + 1;
+    lastPeekTap = now;
+    if (peekTaps === 4) {
+        showHint(isEvil ? "The fine print has something behind it." : "The fine print is not just print.");
+        clearTimeout(peekHintTimer);
+        peekHintTimer = setTimeout(() => { if (tapCount === 0) showHint(''); }, 2200);
+    }
+    if (peekTaps >= PEEK_TAPS) {
+        peekTaps = 0;
+        ach.unlock('devtools');
+        glitchBurst(2200);
+        safely(playGlitchBurstSound);
+        holdMessage(isEvil
+            ? "You looked behind the glass. There is nothing there but you."
+            : "[ INSPECTION NOTED ] You did not need the tools. The Index saw you looking.", 3600);
+    }
+});
+
 function setBlocked(on) {
     if (blocked === on) return;
     blocked = on;
@@ -1665,5 +1897,124 @@ window.addEventListener('focus', () => integrity.inspect());
 rollDisclaimer(false);
 ach.evaluate();
 if (navigator.onLine === false) ach.unlock('offline');
+
+const cutHit = (() => { try { return consumeSaikaiCut(); } catch (err) { return null; } })();
+if (cutHit) {
+    const side = cutHit.side === 'evil' ? 'evil' : 'normal';
+    lastDisclaimer = interruptDisclaimers[side] || lastDisclaimer;
+    disclaimerEl.textContent = lastDisclaimer;
+    applySaikaiCut(cutHit);
+}
+
+function wasReload() {
+    try {
+        const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type) return nav.type === 'reload';
+        if (performance.navigation) return performance.navigation.type === 1;
+    } catch (e) { }
+    return false;
+}
+const reloadQuips = { 3: "Again? The Index has not changed. You keep arriving.", 5: "Refreshing will not make the Index speak faster.", 8: "The Index is starting to enjoy this. Please stop." };
+(function trackReload() {
+    if (!wasReload()) return;
+    const now = Date.now();
+    const old = readFlag('index_reload_log');
+    const log = (Array.isArray(old) ? old : []).filter(t => now - numberOf(t) < RELOAD_WINDOW_MS);
+    log.push(now);
+    rawStore.set('index_reload_log', JSON.stringify(log));
+    if (log.length >= RELOAD_GOAL) ach.unlock('refresher');
+    if (!cutHit && reloadQuips[log.length]) holdMessage(reloadQuips[log.length], 4000);
+})();
+
+const HIDDEN_KEY = 'index_hidden_at';
+let hiddenAt = 0;
+function welcomeBack(awayMs, quiet) {
+    if (awayMs >= ABSENCE_GOAL_MS) ach.unlock('absence');
+    if (awayMs >= ABSENCE_NOTICE_MS && !quiet) {
+        holdMessage(isEvil
+            ? `You were gone for ${formatTime(awayMs)}. The glass did not look away once.`
+            : `You were gone for ${formatTime(awayMs)}. The Index counted every second.`, 5000);
+    }
+}
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        hiddenAt = Date.now();
+        rawStore.set(HIDDEN_KEY, hiddenAt);
+    } else {
+        const away = hiddenAt ? Date.now() - hiddenAt : 0;
+        hiddenAt = 0;
+        rawStore.remove(HIDDEN_KEY);
+        if (away > 0) welcomeBack(away, false);
+    }
+});
+(() => {
+    const left = numberOf(rawStore.get(HIDDEN_KEY));
+    rawStore.remove(HIDDEN_KEY);
+    if (left > 0 && !document.hidden) welcomeBack(Date.now() - left, !!cutHit);
+})();
+
+const baseDpr = window.devicePixelRatio || 1;
+const isTouchScreen = () => { try { return window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } };
+
+function currentZoom() {
+    try {
+        const vv = window.visualViewport;
+        const pinch = vv && Number(vv.scale) > 0 ? Number(vv.scale) : 1;
+        let browser = (window.devicePixelRatio || 1) / baseDpr;
+        if (!isTouchScreen() && window.outerWidth > 0 && window.innerWidth > 0) {
+            browser = Math.max(browser, window.outerWidth / window.innerWidth);
+        }
+        if (!Number.isFinite(browser) || browser < 1) browser = 1;
+        return pinch * Math.min(browser, 5.2);
+    } catch (e) { return 1; }
+}
+
+function logoAtCenter() {
+    try {
+        const r = logo.getBoundingClientRect();
+        const vv = window.visualViewport;
+        const cx = (vv ? vv.offsetLeft + vv.width / 2 : window.innerWidth / 2);
+        const cy = (vv ? vv.offsetTop + vv.height / 2 : window.innerHeight / 2);
+        return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    } catch (e) { return false; }
+}
+
+let zoomShown = 0;
+let zoomFrame = 0;
+let zoomHintTimer;
+function zoomCheck() {
+    zoomFrame = 0;
+    const z = currentZoom();
+    if (z < 1.5) { zoomShown = 0; return; }
+
+    let level = 0;
+    zoomLines.forEach((l, i) => { if (z >= l.at) level = i + 1; });
+    if (level > zoomShown) {
+        zoomShown = level;
+        if (tapCount === 0 && !busy) {
+            showHint(zoomLines[level - 1].text);
+            clearTimeout(zoomHintTimer);
+            zoomHintTimer = setTimeout(() => { if (tapCount === 0) showHint(''); }, 3500);
+        }
+    }
+    if (z >= ZOOM_CLOSE_AT) {
+        if (!ach.has('zoom_close')) ach.unlock('zoom_close');
+        if (!ach.has('zoom_eye') && logoAtCenter()) ach.unlock('zoom_eye');
+    }
+    if (z >= ZOOM_MAX_AT && !ach.has('zoom_max')) {
+        ach.unlock('zoom_max');
+        glitchBurst(1400);
+        holdMessage(isEvil
+            ? "You cannot get any closer. The glass is fogging up."
+            : "You cannot get any closer. The Index respects that. Barely.", 3500);
+    }
+}
+const queueZoomCheck = () => { if (!zoomFrame) zoomFrame = requestAnimationFrame(zoomCheck); };
+window.addEventListener('resize', queueZoomCheck);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', queueZoomCheck);
+    window.visualViewport.addEventListener('scroll', queueZoomCheck);
+}
+queueZoomCheck();
 
 window.addEventListener('unhandledrejection', (e) => console.warn('[Index] Unhandled rejection.', e.reason));
