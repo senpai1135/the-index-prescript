@@ -7,6 +7,7 @@ export const prescripts = [
     { text: "For the next 10 minutes, you must refer to your phone exclusively as 'The device of doom.'", cooldown: { value: 10, unit: 'minutes' } },
     { text: "Whisper 'it is time' to a houseplant.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "Point at a random object and gasp dramatically. Do not explain why.", cooldown: { value: 0, unit: 'seconds' } },
+
     { text: "Apologize to the next inanimate object you collide with, and wait for its response.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "Stare intensely at the third step of the nearest staircase for exactly 90 seconds.", cooldown: { value: 90, unit: 'seconds' } },
     { text: "Hop on your left foot precisely five times before entering any convenience store.", cooldown: { value: 0, unit: 'seconds' } },
@@ -24,6 +25,7 @@ export const prescripts = [
     { text: "Read the last text message you received backward, out loud, to an empty corner.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "Eat your next meal entirely with your non-dominant hand while blindfolded.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "Write the letter 'X' on a piece of paper, fold it four times, and drop it in a trash can.", cooldown: { value: 0, unit: 'seconds' } },
+
     { text: "Within the next 4 hours, count every window on the building to your left. Do not look back.", cooldown: { value: 4, unit: 'hours' } },
     { text: "Before the next bell rings, exchange your left shoe with someone else's right shoe.", cooldown: { value: 1, unit: 'hours' } },
     { text: "Walk exactly 44 paces north, turn 90 degrees clockwise, and blink three times.", cooldown: { value: 0, unit: 'seconds' } },
@@ -41,6 +43,7 @@ export const prescripts = [
     { text: "Walk backward through the next threshold you cross, then sigh deeply.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "Before tomorrow noon, you must hand a blank piece of paper to a complete stranger.", cooldown: { until: '12:00', tomorrow: true } },
     { text: "Look at the sky. If you see a cloud shaped like an eye, close your eyes for 30 seconds.", cooldown: { value: 30, unit: 'seconds' } },
+
     { text: "The next time you hear a phone ring, hold your breath for precisely seven seconds.", cooldown: { value: 7, unit: 'seconds' } },
     { text: "Draw a circle on the ground with a piece of chalk or your shoe. Stand in it for a minute.", cooldown: { value: 1, unit: 'minutes' } },
     { text: "When someone asks you for the time, give them the exact time, but add three hours to it.", cooldown: { value: 0, unit: 'seconds' } },
@@ -57,6 +60,7 @@ export const prescripts = [
     { text: "Put a small piece of paper inside your left shoe and walk with it for the rest of the day.", cooldown: { value: 6, unit: 'hours' } },
     { text: "Spin around once in a clockwise circle before answering any phone call.", cooldown: { value: 0, unit: 'seconds' } },
     { text: "When you finish reading this, do not look at your screen for the next sixty seconds.", cooldown: { value: 60, unit: 'seconds' } },
+
     { text: "Within the next 22 hours, breathe normally and eat a bag of your favorite food.", cooldown: { value: 22, unit: 'hours' } },
     { text: "Before the next sunrise, open your door exactly three inches and leave it there for ten minutes.", cooldown: { value: 10, unit: 'minutes' } },
     { text: "Within the next 3 hours, look at the sky and blink exactly 45 times.", cooldown: { value: 3, unit: 'hours' } },
@@ -289,3 +293,106 @@ for (const side of [['normal', disclaimers], ['evil', mirrorDisclaimers]]) {
         if (!side[1].includes(pair.disclaimer)) side[1].push(pair.disclaimer);
     }
 }
+
+export const deviceNames = {
+    phone: 'phone', tablet: 'tablet', mac: 'Mac', pc: 'PC',
+    chromebook: 'Chromebook', computer: 'computer', device: 'device'
+};
+
+export function detectDevice() {
+    try {
+        const nav = (typeof navigator !== 'undefined' && navigator) ? navigator : {};
+        const ua = String(nav.userAgent || '');
+        const uad = nav.userAgentData;
+        const platform = String((uad && uad.platform) || nav.platform || '');
+        const touchPoints = Number(nav.maxTouchPoints) || 0;
+        const mq = (q) => { try { return !!(window.matchMedia && window.matchMedia(q).matches); } catch (e) { return false; } };
+        const coarse = mq('(pointer: coarse)') && mq('(hover: none)');
+        const scr = (typeof window !== 'undefined' && window.screen) ? window.screen : {};
+        const shortSide = Math.min(Number(scr.width) || 0, Number(scr.height) || 0);
+
+        if (/iPad/i.test(ua) || (/Mac/i.test(platform) && touchPoints > 1)) return 'tablet';
+        if (/iPhone|iPod/i.test(ua)) return 'phone';
+        if (/Android/i.test(ua)) return /Mobile/i.test(ua) ? 'phone' : 'tablet';
+        if (/Windows Phone|IEMobile|Opera Mini|BlackBerry|webOS/i.test(ua)) return 'phone';
+        if (/Tablet|PlayBook|Silk|Kindle/i.test(ua)) return 'tablet';
+        if (uad && uad.mobile === true) return 'phone';
+        if (/CrOS/i.test(ua)) return 'chromebook';
+        if (/Macintosh|MacIntel|MacPPC|Mac68K/i.test(ua + ' ' + platform)) return 'mac';
+        if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'pc';
+
+        if (coarse && shortSide > 0) return shortSide < 600 ? 'phone' : 'tablet';
+        if (/Linux|X11|BSD/i.test(platform + ' ' + ua)) return 'computer';
+        if (coarse) return 'tablet';
+        return 'device';
+    } catch (err) {
+        return 'device';
+    }
+}
+
+export const deviceWills = {
+    "Text someone: 'I'm glad you exist.' Then put your phone down.": {
+        touch: "Text someone: 'I'm glad you exist.' Then put your {device} down.",
+        desk: "Message someone: 'I'm glad you exist.' Then step away from your {device} for a moment.",
+        device: "Tell someone: 'I'm glad you exist.' Then put your {device} down."
+    },
+    "Sit with a warm drink for 10 minutes. Put your phone face down.": {
+        touch: "Sit with a warm drink for 10 minutes. Put your {device} face down.",
+        desk: "Sit with a warm drink for 10 minutes. Look away from your {device} and let the screen wait.",
+        device: "Sit with a warm drink for 10 minutes. Put your {device} aside."
+    }
+};
+
+const DEVICE_GROUPS = { phone: 'touch', tablet: 'touch', mac: 'desk', pc: 'desk', chromebook: 'desk', computer: 'desk' };
+
+export function adaptWillText(text, device) {
+    try {
+        if (typeof text !== 'string') return text;
+        const kind = deviceNames[device] ? device : detectDevice();
+        const name = deviceNames[kind] || 'device';
+        const entry = deviceWills[text];
+        if (entry) {
+            const pick = entry[kind] || entry[DEVICE_GROUPS[kind]] || entry.device;
+            if (pick) return pick.replace(/\{device\}/g, name);
+        }
+        return text.replace(/\b(your|the) phone\b/gi, (m, w) => `${w} ${name}`);
+    } catch (err) {
+        return text;
+    }
+}
+
+export const interruptLines = {
+    normal: {
+        started: "The transmission was cut. The Index noticed who left.",
+        pending: "You left before it began. The Index had already started to speak."
+    },
+    evil: {
+        started: "You left in the middle of the song. The glass kept humming without you.",
+        pending: "You left before the song began. The mirror waited. It is still waiting."
+    }
+};
+export const interruptDisclaimers = {
+    normal: "The Index does not forget who closed the door during the transmission.",
+    evil: "The mirror held the last note for you. It will not hold it forever."
+};
+
+export const volumeJudgements = {
+    normal: [
+        "Zero percent. The Index has no ears, yet it knows you are not listening. What are you hiding from the silence?",
+        "Silence is also a decision. Who made it: you, or the thing you are avoiding?",
+        "You muted a Will. A Will does not need sound to be true. Neither does a secret.",
+        "The Index cannot hear that you cannot hear. It can only wonder what you were afraid it would say."
+    ],
+    evil: [
+        "The glass is not offended. It only wonders what you were afraid to hear.",
+        "You turned the mirror down. A face does not need sound to be seen, and neither does yours.",
+        "Silence is a place to hide. The mirror knows every place to hide. It will not tell."
+    ]
+};
+
+export const zoomLines = [
+    { at: 2, text: "Closer." },
+    { at: 3, text: "The Index can feel your breath on the glass." },
+    { at: 4, text: "This is much too close. It is looking back." },
+    { at: 4.9, text: "There is nothing left to see. Only you, in the glass." }
+];
