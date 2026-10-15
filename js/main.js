@@ -29,6 +29,8 @@ const ZOOM_MAX_AT = 4.9;
 
 const RELOAD_WINDOW_MS = 60 * 1000;
 const RELOAD_GOAL = 5;
+const RELOAD_LOG_MS = 2 * 60 * 1000;
+const RELOAD_GOAL_LONG = 10;
 const ABSENCE_NOTICE_MS = 10 * 60 * 1000;
 const ABSENCE_GOAL_MS = 30 * 60 * 1000;
 
@@ -87,6 +89,22 @@ function cleanLines(list, fallback) {
 
 const prescripts = cleanPool(willsMod?.prescripts, [{ text: "The Index is silent. Proceed as you see fit.", cooldown: cd0 }]);
 const mirrorPrescripts = cleanPool(willsMod?.mirrorPrescripts, [{ text: "Be kind to someone today.", cooldown: cd0 }]);
+const holidayPools = {};
+for (const name of ['halloween', 'christmas', 'valentine', 'aprilfools', 'newyear']) {
+    holidayPools[name] = {
+        normal: cleanPool(willsMod?.holidayWills?.[name]?.normal, []),
+        evil: cleanPool(willsMod?.holidayWills?.[name]?.evil, [])
+    };
+}
+const holidayDisclaimerPools = {};
+for (const name of ['halloween', 'christmas', 'valentine', 'aprilfools', 'newyear']) {
+    const lines = (side) => {
+        const list = willsMod?.holidayDisclaimers?.[name]?.[side];
+        return Array.isArray(list) ? list.filter(t => typeof t === 'string' && t.trim()) : [];
+    };
+    holidayDisclaimerPools[name] = { normal: lines('normal'), evil: lines('evil') };
+}
+const HOLIDAY_DISCLAIMER_CHANCE = 0.55;
 const saikaiPrescripts = {
     normal: willsMod?.saikaiPrescripts?.normal ?? { text: "A transmission is incoming. Do not look away. Do not request another Will until it has ended.", cooldown: cd0, special: 'saikai' },
     evil: willsMod?.saikaiPrescripts?.evil ?? { text: "Sit with me for a little while. Put everything else down. Listen until the very end.", cooldown: cd0, special: 'saikai' }
@@ -109,10 +127,6 @@ const interruptDisclaimers = {
     normal: "The Index does not forget who closed the door during the transmission.",
     evil: "The mirror held the last note for you. It will not hold it forever.",
     ...(willsMod?.interruptDisclaimers || {})
-};
-const volumeJudgements = {
-    normal: cleanLines(willsMod?.volumeJudgements?.normal, "Zero percent. What are you hiding from the silence?"),
-    evil: cleanLines(willsMod?.volumeJudgements?.evil, "The glass is not offended. It only wonders what you were afraid to hear.")
 };
 const zoomLines = (Array.isArray(willsMod?.zoomLines) ? willsMod.zoomLines : [
     { at: 2, text: "Closer." }, { at: 3, text: "The Index can feel your breath on the glass." },
@@ -138,21 +152,24 @@ const SEALED_KEYS = new Set(achMod?.SEAL_KEYS || []);
 let integrity = { inspect() {}, seal() {} };
 
 const memStore = new Map();
+const staleKeys = new Set();
 const rawStore = {
     get(key) {
-        try {
-            const v = localStorage.getItem(key);
-            if (v !== null) return v;
-        } catch (e) { }
+        if (!staleKeys.has(key)) {
+            try {
+                const v = localStorage.getItem(key);
+                if (v !== null) return v;
+            } catch (e) { }
+        }
         return memStore.has(key) ? memStore.get(key) : null;
     },
     set(key, value) {
         memStore.set(key, String(value));
-        try { localStorage.setItem(key, String(value)); } catch (e) { }
+        try { localStorage.setItem(key, String(value)); staleKeys.delete(key); } catch (e) { staleKeys.add(key); }
     },
     remove(key) {
         memStore.delete(key);
-        try { localStorage.removeItem(key); } catch (e) { }
+        try { localStorage.removeItem(key); staleKeys.delete(key); } catch (e) { staleKeys.add(key); }
     }
 };
 const store = {
@@ -208,6 +225,7 @@ let revealing = false;
 let revealMode = 'normal';
 let revealWatchdog;
 let tapCount = 0;
+let season = null;
 let tapTimer;
 
 function setBusy(on) {
@@ -634,7 +652,19 @@ function peekPrescript(mode) {
     saveDeck(mode, deck);
 
     const unseen = deck.filter(t => !seen.has(t));
-    const text = unseen.length ? unseen[Math.floor(Math.random() * unseen.length)] : deck[0];
+    const calm = calmLeft(mode) > 0;
+    const free = (list) => list.filter(t => lockMsOf(mode, t) === 0);
+    let choices = unseen.length ? unseen : deck;
+    if (calm) {
+        const f = free(choices);
+        if (f.length) choices = f;
+        else { const g = free(deck); if (g.length) choices = g; }
+    }
+    let text = unseen.length ? choices[Math.floor(Math.random() * choices.length)] : choices[0];
+    if (!calm && unseen.length > 1 && lockMsOf(mode, text) >= HEAVY_LOCK_MS && Math.random() < 0.5) {
+        const lighter = choices.filter(t => lockMsOf(mode, t) < HEAVY_LOCK_MS);
+        if (lighter.length) text = lighter[Math.floor(Math.random() * lighter.length)];
+    }
     return pool.find(p => p.text === text) || pool[0];
 }
 
@@ -662,10 +692,15 @@ function bumpDaily() {
     store.set('index_daily', { day: today, count });
 }
 
+const visitSides = new Set();
+let recentWills = [];
+
 function trackWill(mode, text, info = {}) {
     const seen = getSeen(mode);
-    seen.add(text);
-    store.set(seenKey(mode), [...seen]);
+    if (!info.holiday) {
+        seen.add(text);
+        store.set(seenKey(mode), [...seen]);
+    }
     store.set('index_total', numberOf(store.get('index_total', 0)) + 1);
     bumpStreak();
     bumpDaily();
@@ -674,6 +709,26 @@ function trackWill(mode, text, info = {}) {
     const hour = stamp.getHours();
     if (hour === 3 && stamp.getMinutes() === 33) ach.unlock('witching');
     if (stamp.getDay() === 5 && stamp.getDate() === 13) ach.unlock('friday13');
+    const month = stamp.getMonth(), dom = stamp.getDate(), minute = stamp.getMinutes();
+    if (month === 9 && dom === 31) ach.unlock('halloween');
+    if (month === 11 && dom === 25) ach.unlock('christmas');
+    if (month === 0 && dom === 1) ach.unlock('newyear');
+    if (month === 11 && dom === 31) ach.unlock('nye');
+    if (month === 1 && dom === 14) ach.unlock('valentine');
+    if (month === 3 && dom === 1) ach.unlock('aprilfools');
+    if (month === 1 && dom === 29) ach.unlock('leapday');
+    if (hour % 12 === 11 && minute === 11) ach.unlock('wish1111');
+    if (hour === 0 && minute === 0) ach.unlock('midnight');
+
+    visitSides.add(mode);
+    sinceSaikaiMem[mode] += 1;
+    const nowMs = Date.now();
+    recentWills = recentWills.filter(t => nowMs - t <= 30000);
+    recentWills.push(nowMs);
+    if (recentWills.length >= 5) ach.unlock('rapid5');
+    if (visitSides.size >= 2) ach.unlock('two_faced');
+    if (info.patient) ach.unlock('patient');
+    if (numberOf(info.cooldownMs) >= 12 * 60 * 60 * 1000) ach.unlock('heavy_hand');
     if (hour < 4) ach.unlock('night_owl');
     else if (hour < 7) ach.unlock('early_bird');
     if (info.timeWill) ach.unlock('time_will');
@@ -719,13 +774,62 @@ function activeTimeWill(mode) {
 }
 
 function pickEchoWill(mode) {
-    const wills = pairMap[mode].get(lastDisclaimer);
-    if (!wills || Math.random() >= ECHO_CHANCE) return null;
+    let wills = pairMap[mode].get(lastDisclaimer);
+    if (wills && calmLeft(mode) > 0) wills = wills.filter(t => lockMsOf(mode, t) === 0);
+    if (!wills || !wills.length || Math.random() >= ECHO_CHANCE) return null;
     const seen = getSeen(mode);
     const unseen = wills.filter(t => !seen.has(t));
     const choices = unseen.length ? unseen : wills;
     const text = choices[Math.floor(Math.random() * choices.length)];
     return poolFor(mode).find(p => p.text === text) || null;
+}
+
+const HEAVY_LOCK_MS = 6 * 60 * 60 * 1000;
+const calmKey = (mode) => `index_calm_${mode}`;
+const calmLeft = (mode) => Math.max(0, Math.floor(numberOf(rawStore.get(calmKey(mode)))));
+const calmFor = (ms) => ms >= 60 * 60 * 1000 ? 3 : ms >= 10 * 60 * 1000 ? 2 : 1;
+function lockMsOf(mode, text) {
+    const p = poolFor(mode).find(x => x.text === text);
+    return p ? cooldownToMs(p.cooldown) : 0;
+}
+
+const SAIKAI_MIN_GAP = 12;
+const SAIKAI_DROUGHT = 20;
+const sinceSaikaiMem = { normal: Infinity, evil: Infinity };
+let pendingPity = false;
+let patientEarned = false;
+const HOLIDAY_CHANCE = 0.4;
+let pendingHoliday = false;
+let lastHolidayText = '';
+function pickHolidayWill(mode) {
+    if (!season) return null;
+    const list = (holidayPools[season] || {})[mode] || [];
+    if (!list.length || Math.random() >= HOLIDAY_CHANCE) return null;
+    let choices = list;
+    if (calmLeft(mode) > 0) {
+        const free = list.filter(w => cooldownToMs(w.cooldown) === 0);
+        if (free.length) choices = free;
+    }
+    const key = `index_holiday_seen_${season}_${mode}_${new Date().getFullYear()}`;
+    const saved = readFlag(key);
+    let seenToday = Array.isArray(saved) ? saved : [];
+    let fresh = choices.filter(w => !seenToday.includes(w.text) && w.text !== lastHolidayText);
+    if (!fresh.length) {
+        seenToday = seenToday.filter(t => !choices.some(w => w.text === t));
+        fresh = choices.filter(w => w.text !== lastHolidayText);
+        if (!fresh.length) fresh = choices;
+    }
+    const pick = fresh[Math.floor(Math.random() * fresh.length)];
+    lastHolidayText = pick.text;
+    rawStore.set(key, JSON.stringify([...seenToday, pick.text]));
+    return { ...pick, holiday: true };
+}
+function saikaiGapOk(mode) {
+    const total = numberOf(store.get('index_total', 0));
+    const at = rawStore.get(`index_saikai_at_${mode}`);
+    let sinceStored = Infinity;
+    if (at !== null) { const d = total - numberOf(at); sinceStored = d < 0 ? Infinity : d; }
+    return Math.min(sinceStored, sinceSaikaiMem[mode]) >= SAIKAI_MIN_GAP;
 }
 
 function saikaiChance(misses) {
@@ -763,16 +867,23 @@ function receiveWill() {
     const misses = numberOf(store.get(missKey, 0));
     let selectedObj;
     pendingTimeWill = null;
-    if (Math.random() < saikaiChance(misses)) {
+    pendingPity = false;
+    pendingHoliday = false;
+    if (saikaiGapOk(mode) && Math.random() < saikaiChance(misses)) {
         selectedObj = saikaiPrescripts[mode];
+        pendingPity = misses >= SAIKAI_DROUGHT;
         store.set(missKey, 0);
+        rawStore.set(`index_saikai_at_${mode}`, numberOf(store.get('index_total', 0)));
+        sinceSaikaiMem[mode] = 0;
     } else {
         const timed = activeTimeWill(mode);
         if (timed) {
             selectedObj = { ...timed.will, timeWill: true };
             pendingTimeWill = timed;
         } else {
-            selectedObj = pickEchoWill(mode) || peekPrescript(mode);
+            const holiday = pickHolidayWill(mode);
+            if (holiday) { selectedObj = holiday; pendingHoliday = true; }
+            else selectedObj = pickEchoWill(mode) || peekPrescript(mode);
         }
         store.set(missKey, misses + 1);
     }
@@ -788,6 +899,14 @@ function receiveWill() {
 
     const cooldownMs = cooldownToMs(selectedObj.cooldown);
     revealCooldownMs = cooldownMs;
+    patientEarned = false;
+    if (selectedObj.special !== 'saikai') {
+        const left = calmLeft(mode);
+        if (cooldownMs > 0) rawStore.set(calmKey(mode), calmFor(cooldownMs));
+        else if (left > 0) rawStore.set(calmKey(mode), left - 1);
+        patientEarned = numberOf(rawStore.get(`index_lastlock_${mode}`)) >= 60 * 60 * 1000;
+        rawStore.set(`index_lastlock_${mode}`, cooldownMs);
+    }
     if (cooldownMs > 0) {
         rawStore.set(lockKey(mode), Date.now() + cooldownMs);
         rawStore.set(textKey(mode), targetSentence);
@@ -924,16 +1043,18 @@ function finishReveal() {
     if (pendingSaikai) {
         pendingSaikai = false;
         ach.unlock('saikai_found');
+        if (pendingPity) { pendingPity = false; ach.unlock('saikai_pity'); }
         setTimeout(startSaikai, SAIKAI_LEAD_IN_MS);
         return;
     }
 
-    commitPrescript(revealMode, canonicalSentence);
+    if (!pendingHoliday) commitPrescript(revealMode, canonicalSentence);
     const timed = pendingTimeWill;
     pendingTimeWill = null;
     if (timed) store.set(timed.key, timed.today);
-    const echo = (pairMap[revealMode].get(lastDisclaimer) || []).includes(canonicalSentence);
-    trackWill(revealMode, canonicalSentence, { timeWill: !!timed, timeWillId: timed && timed.id, echo, cooldownMs: revealCooldownMs });
+    const echo = !pendingHoliday && (pairMap[revealMode].get(lastDisclaimer) || []).includes(canonicalSentence);
+    trackWill(revealMode, canonicalSentence, { timeWill: !!timed, timeWillId: timed && timed.id, echo, cooldownMs: revealCooldownMs, patient: patientEarned, holiday: pendingHoliday });
+    pendingHoliday = false;
 
     const remaining = getRemainingTime();
     if (remaining > 0) {
@@ -942,11 +1063,6 @@ function finishReveal() {
         button.disabled = blocked;
     }
     setBusy(false);
-
-    if (soundIsOff(false)) {
-        ach.unlock('silent_will');
-        holdMessage(pickJudgement(), 6000);
-    }
 }
 
 function parseLrc(raw) {
@@ -1020,57 +1136,15 @@ function cutLine(side, phase) {
     return (phase === 'pending' ? set.pending : set.started) || set.started || "The transmission was cut.";
 }
 
+let bootMsg = null;
+const bootSay = (text, ms) => { if (!bootMsg) bootMsg = { text, ms }; };
+
 function applySaikaiCut(hit) {
     const side = hit.side === 'evil' ? 'evil' : 'normal';
     ach.unlock(side === 'evil' ? 'saikai_cut_mirror' : 'saikai_cut');
     ach.evaluate();
     glitchBurst(2800);
-    holdMessage(cutLine(side, hit.phase), 7500);
-}
-
-function soundIsOff(forSong) {
-    try {
-        if (forSong && songSource === 'youtube' && ytPlayer) {
-            if (typeof ytPlayer.isMuted === 'function' && ytPlayer.isMuted()) return true;
-            return typeof ytPlayer.getVolume === 'function' && ytPlayer.getVolume() === 0;
-        }
-        const node = forSong ? song : sfx;
-        return !!node && (node.muted === true || node.volume === 0);
-    } catch (e) { return false; }
-}
-
-const pickJudgement = () => {
-    const list = volumeJudgements[isEvil ? 'evil' : 'normal'];
-    return list[Math.floor(Math.random() * list.length)];
-};
-
-let judgeUntil = 0;
-let judgeText = "";
-let silenceTimer;
-let silenceSamples = 0;
-let silentSamples = 0;
-let silenceJudged = false;
-
-function judgeSaikaiSilence() {
-    if (silenceJudged || !saikaiActive) return;
-    silenceJudged = true;
-    judgeText = pickJudgement();
-    judgeUntil = performance.now() + 6000;
-}
-
-function startSilenceWatch() {
-    clearInterval(silenceTimer);
-    silenceSamples = 0;
-    silentSamples = 0;
-    silenceJudged = false;
-    silenceTimer = setInterval(() => {
-        if (!saikaiActive) return;
-        silenceSamples++;
-        if (soundIsOff(true)) {
-            silentSamples++;
-            if (silentSamples >= 3) judgeSaikaiSilence();
-        }
-    }, 1000);
+    bootSay(cutLine(side, hit.phase), 7500);
 }
 
 function randGlitch() {
@@ -1203,7 +1277,6 @@ function beginLyrics() {
     lastSongMove = performance.now();
     scheduleBurst(performance.now());
     if (saikaiLive) { saikaiLive.phase = 'started'; writeLive(); }
-    startSilenceWatch();
     lyricFrame = requestAnimationFrame(lyricLoop);
 }
 
@@ -1279,13 +1352,6 @@ function lyricLoop(now) {
         return;
     }
 
-    if (now < judgeUntil) {
-        applyGlitchState(false);
-        display.innerText = judgeText;
-        lyricFrame = requestAnimationFrame(lyricLoop);
-        return;
-    }
-
     let idx = -1;
     for (let i = lyrics.length - 1; i >= 0; i--) {
         if (lyrics[i].time <= t) { idx = i; break; }
@@ -1332,8 +1398,6 @@ function endSaikai(completed, reason) {
     saikaiActive = false;
     clearTimeout(saikaiCap);
     clearTimeout(offlineTimer);
-    clearInterval(silenceTimer);
-    judgeUntil = 0;
     clearSaikaiLive();
     cancelAnimationFrame(lyricFrame);
     display.classList.remove('lyric-mode', 'glitching');
@@ -1349,7 +1413,6 @@ function endSaikai(completed, reason) {
     if (completed) {
         ach.unlock('saikai');
         store.set('index_saikai_plays', numberOf(store.get('index_saikai_plays', 0)) + 1);
-        if (silenceSamples >= 20 && silentSamples >= silenceSamples * 0.9) ach.unlock('silent_saikai');
         const sides = store.get('index_saikai_sides', []);
         const side = isEvil ? 'evil' : 'normal';
         if (!sides.includes(side)) store.set('index_saikai_sides', [...sides, side]);
@@ -1380,18 +1443,21 @@ song.addEventListener('pause', () => {
     if (saikaiActive && songSource === 'local' && !song.ended) song.play().catch(() => {});
 });
 
-song.addEventListener('volumechange', () => { if (saikaiActive && songSource === 'local' && soundIsOff(true)) judgeSaikaiSilence(); });
-
 document.addEventListener('visibilitychange', () => { lastSongMove = performance.now(); });
 
 window.addEventListener('pagehide', (e) => {
     try {
         writeSaikaiCut();
-        if (!e.persisted) rawStore.remove(HIDDEN_KEY);
+        flushPlay();
+        if (!e.persisted) {
+            rawStore.remove(HIDDEN_KEY);
+            try { localStorage.removeItem(tabKey); } catch (x) { }
+        }
     } catch (err) { }
 });
 window.addEventListener('pageshow', (e) => {
     if (!e.persisted) return;
+    beatTab();
     rawStore.remove(SAIKAI_CUT_KEY);
     if (saikaiSession) endSaikai(false, 'cut');
     else if (saikaiLive) clearSaikaiLive();
@@ -1423,6 +1489,7 @@ function probeImage(src) {
 }
 
 function setLogoImage(evil) {
+    if (season === 'aprilfools') evil = !evil;
     let src;
     let mirrored = false;
     if (evil) {
@@ -1436,6 +1503,7 @@ function setLogoImage(evil) {
     logo.alt = evil ? "The Index, reflected" : "The Index Logo";
     favicon.type = src.startsWith('data:') ? 'image/svg+xml' : 'image/png';
     favicon.href = src;
+    if (season && SEASONS[season]) { favicon.type = 'image/svg+xml'; favicon.href = SEASONS[season].icon; }
 }
 
 logo.addEventListener('error', () => {
@@ -1476,11 +1544,13 @@ function showHint(text) {
 }
 
 function shakeLogo(n) {
-    logo.style.setProperty('--shake', `${1 + n * 1.5}px`);
-    logo.style.setProperty('--tilt', `${0.8 + n * 0.9}deg`);
-    logo.classList.remove('tap-shake');
-    void logo.offsetWidth;
-    logo.classList.add('tap-shake');
+    for (const el of (adornEl ? [logo, adornEl] : [logo])) {
+        el.style.setProperty('--shake', `${1 + n * 1.5}px`);
+        el.style.setProperty('--tilt', `${0.8 + n * 0.9}deg`);
+        el.classList.remove('tap-shake');
+        void el.offsetWidth;
+        el.classList.add('tap-shake');
+    }
 }
 
 logo.addEventListener('animationend', (e) => {
@@ -1508,6 +1578,7 @@ function flipLogo() {
     button.disabled = true;
     logo.classList.remove('tap-shake');
     logo.classList.add('transforming');
+    if (adornEl) adornEl.classList.add('transforming');
     logoContainer.classList.add('transforming');
     mainContainer.classList.add('flicker');
 
@@ -1517,6 +1588,7 @@ function flipLogo() {
 
     setTimeout(() => {
         logo.classList.remove('transforming');
+        if (adornEl) adornEl.classList.remove('transforming');
         logoContainer.classList.remove('transforming');
         mainContainer.classList.remove('flicker');
         setBusy(false);
@@ -1525,11 +1597,15 @@ function flipLogo() {
 }
 
 logo.addEventListener('click', () => {
+    if (Date.now() < suppressLogoClickUntil) return;
     if (busy) return;
     getAudioCtx();
 
     tapCount++;
     clearTimeout(tapTimer);
+    const pokes = numberOf(store.get('index_pokes', 0)) + 1;
+    store.set('index_pokes', pokes);
+    if (pokes >= 100) ach.unlock('poke_100');
 
     if (tapCount >= TAP_THRESHOLD) {
         tapCount = 0;
@@ -1634,9 +1710,11 @@ if (footerLink) {
     ['click', 'auxclick'].forEach(type => footerLink.addEventListener(type, () => ach.unlock('credits')));
 }
 
+let holdBase = "";
 function holdMessage(text, ms) {
     if (busy || revealing || saikaiSession || blocked) return false;
-    const previous = display.innerText;
+    const previous = holdText ? holdBase : display.innerText;
+    holdBase = previous;
     holdText = true;
     display.innerText = text;
     if (ms) {
@@ -1741,6 +1819,7 @@ function konamiFeed(token) {
     if (konamiStep >= KONAMI.length) {
         konamiStep = 0;
         ach.unlock('konami');
+        if (isEvil) ach.unlock('konami_mirror');
         glitchBurst(2600);
         safely(playGlitchBurstSound);
         holdMessage(isEvil
@@ -1789,6 +1868,7 @@ function isInspectCombo(e) {
 
 document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
+    if (Date.now() < suppressPeekUntil) return;
     ach.unlock('peek');
 });
 document.addEventListener('keydown', (e) => {
@@ -1860,7 +1940,24 @@ setInterval(() => {
 
 let lastDisclaimer = store.get('index_last_disclaimer', '');
 
+function pickHolidayDisclaimer(mode, always = false) {
+    if (!season) return null;
+    const list = (holidayDisclaimerPools[season] || {})[mode] || [];
+    if (!list.length || (!always && Math.random() >= HOLIDAY_DISCLAIMER_CHANCE)) return null;
+    const fresh = list.filter(t => t !== lastDisclaimer);
+    const from = fresh.length ? fresh : list;
+    return from[Math.floor(Math.random() * from.length)];
+}
+
 function rollDisclaimer(animate = true) {
+    const holidayLine = pickHolidayDisclaimer(isEvil ? 'evil' : 'normal');
+    if (holidayLine) {
+        lastDisclaimer = holidayLine;
+        if (!animate) { disclaimerEl.textContent = holidayLine; return; }
+        disclaimerEl.classList.add('out');
+        setTimeout(() => { disclaimerEl.textContent = holidayLine; disclaimerEl.classList.remove('out'); }, 450);
+        return;
+    }
     let pool = isEvil ? mirrorDisclaimers : disclaimers;
     const paired = [...pairMap[isEvil ? 'evil' : 'normal'].keys()];
     const seenKeyD = `index_disc_seen_${isEvil ? 'evil' : 'normal'}`;
@@ -1914,24 +2011,33 @@ function wasReload() {
     } catch (e) { }
     return false;
 }
-const reloadQuips = { 3: "Again? The Index has not changed. You keep arriving.", 5: "Refreshing will not make the Index speak faster.", 8: "The Index is starting to enjoy this. Please stop." };
+const reloadQuips = {
+    3: "Again? The Index has not changed. You keep arriving.",
+    5: "Refreshing will not make the Index speak faster.",
+    8: "The Index is starting to enjoy this. Please stop.",
+    10: "Ten times. The Index has stopped pretending this is normal."
+};
 (function trackReload() {
     if (!wasReload()) return;
     const now = Date.now();
     const old = readFlag('index_reload_log');
-    const log = (Array.isArray(old) ? old : []).filter(t => now - numberOf(t) < RELOAD_WINDOW_MS);
+    const log = (Array.isArray(old) ? old : []).filter(t => now - numberOf(t) < RELOAD_LOG_MS);
     log.push(now);
     rawStore.set('index_reload_log', JSON.stringify(log));
-    if (log.length >= RELOAD_GOAL) ach.unlock('refresher');
-    if (!cutHit && reloadQuips[log.length]) holdMessage(reloadQuips[log.length], 4000);
+    store.set('index_reloads', numberOf(store.get('index_reloads', 0)) + 1);
+    if (log.filter(t => now - t < RELOAD_WINDOW_MS).length >= RELOAD_GOAL) ach.unlock('refresher');
+    if (log.length >= RELOAD_GOAL_LONG) ach.unlock('refresher10');
+    ach.evaluate();
+    if (reloadQuips[log.length]) bootSay(reloadQuips[log.length], 4000);
 })();
 
 const HIDDEN_KEY = 'index_hidden_at';
 let hiddenAt = 0;
-function welcomeBack(awayMs, quiet) {
+let saikaiHiddenAt = 0;
+function welcomeBack(awayMs, say = holdMessage) {
     if (awayMs >= ABSENCE_GOAL_MS) ach.unlock('absence');
-    if (awayMs >= ABSENCE_NOTICE_MS && !quiet) {
-        holdMessage(isEvil
+    if (awayMs >= ABSENCE_NOTICE_MS) {
+        say(isEvil
             ? `You were gone for ${formatTime(awayMs)}. The glass did not look away once.`
             : `You were gone for ${formatTime(awayMs)}. The Index counted every second.`, 5000);
     }
@@ -1940,18 +2046,413 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         hiddenAt = Date.now();
         rawStore.set(HIDDEN_KEY, hiddenAt);
+        if (saikaiSession) saikaiHiddenAt = hiddenAt;
+        flushPlay();
     } else {
         const away = hiddenAt ? Date.now() - hiddenAt : 0;
         hiddenAt = 0;
         rawStore.remove(HIDDEN_KEY);
-        if (away > 0) welcomeBack(away, false);
+        if (away > 0) welcomeBack(away);
+        if (saikaiSession && saikaiHiddenAt && Date.now() - saikaiHiddenAt >= 8000) ach.unlock('saikai_bg');
+        saikaiHiddenAt = 0;
+        applySeason(true);
     }
 });
 (() => {
     const left = numberOf(rawStore.get(HIDDEN_KEY));
     rawStore.remove(HIDDEN_KEY);
-    if (left > 0 && !document.hidden) welcomeBack(Date.now() - left, !!cutHit);
+    if (left > 0 && !document.hidden) welcomeBack(Date.now() - left, bootSay);
 })();
+
+
+let pendingPlay = 0;
+let sessionMs = 0;
+function flushPlay() {
+    if (pendingPlay < 1000) return;
+    const add = pendingPlay;
+    pendingPlay = 0;
+    store.set('index_playtime', numberOf(store.get('index_playtime', 0)) + add);
+    ach.evaluate();
+}
+setInterval(() => {
+    if (document.hidden) return;
+    pendingPlay += 1000;
+    sessionMs += 1000;
+    if (sessionMs >= 60 * 60 * 1000) ach.unlock('long_session');
+    if (pendingPlay >= 30000) flushPlay();
+}, 1000);
+
+(function visitBook() {
+    const today = dayNumber();
+    const days = store.get('index_days', []);
+    const list = Array.isArray(days) ? days : [];
+    if (!list.includes(today)) store.set('index_days', [...list, today].slice(-400));
+
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const year = new Date().getFullYear();
+        const std = Math.max(new Date(year, 0, 1).getTimezoneOffset(), new Date(year, 6, 1).getTimezoneOffset());
+        const prev = readFlag('index_tz');
+        if (tz && prev && prev.tz && prev.tz !== tz && numberOf(prev.std) !== std) {
+            if (ach.unlock('traveler')) bootSay("The sun is in a different place. The Index noticed that you are far from where you were.", 6000);
+        }
+        if (tz) rawStore.set('index_tz', JSON.stringify({ tz, std }));
+    } catch (err) { }
+})();
+
+function clockWentBack() {
+    const fresh = ach.unlock('clock_back');
+    if (fresh) holdMessage("The clock moved backward. The Index keeps its own time.", 5000);
+    return fresh;
+}
+const clockBase = { date: Date.now(), perf: performance.now() };
+function clockTick() {
+    const now = Date.now();
+    const drift = (now - clockBase.date) - (performance.now() - clockBase.perf);
+    if (drift < -120000) {
+        clockBase.date = now;
+        clockBase.perf = performance.now();
+        clockWentBack();
+    }
+    rawStore.set('index_clock', now);
+    applySeason(true);
+}
+{
+    const lastClock = numberOf(rawStore.get('index_clock'));
+    if (lastClock > 0 && Date.now() < lastClock - 10 * 60 * 1000) {
+        if (ach.unlock('clock_back')) bootSay("The clock moved backward. The Index keeps its own time.", 5000);
+    }
+    rawStore.set('index_clock', Date.now());
+    setInterval(clockTick, 5000);
+}
+
+const TAB_PREFIX = 'index_tab_';
+const tabId = Math.random().toString(36).slice(2, 10);
+const tabKey = TAB_PREFIX + tabId;
+const TAB_BEAT_MS = 4000;
+const TAB_FRESH_MS = 12000;
+function beatTab() { try { localStorage.setItem(tabKey, String(Date.now())); } catch (err) { } }
+function twinTabs() {
+    if (ach.unlock('twin_tabs')) holdMessage("The Index is open somewhere else too. It does not mind. It is everywhere.", 5000);
+}
+function otherTabAlive() {
+    try {
+        const now = Date.now();
+        let alive = false;
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (!k || !k.startsWith(TAB_PREFIX) || k === tabKey) continue;
+            const age = now - Number(localStorage.getItem(k));
+            if (age < TAB_FRESH_MS) alive = true;
+            else if (age > 60000) localStorage.removeItem(k);
+        }
+        return alive;
+    } catch (err) { return false; }
+}
+if (otherTabAlive() && ach.unlock('twin_tabs')) bootSay("The Index is open somewhere else too. It does not mind. It is everywhere.", 5000);
+beatTab();
+setInterval(beatTab, TAB_BEAT_MS);
+try {
+    if (typeof BroadcastChannel === 'function') {
+        const channel = new BroadcastChannel('index_tabs');
+        channel.onmessage = (e) => {
+            const m = e && e.data;
+            if (!m || m.from === tabId) return;
+            if (m.type === 'hello') channel.postMessage({ type: 'here', from: tabId });
+            twinTabs();
+        };
+        channel.postMessage({ type: 'hello', from: tabId });
+    }
+} catch (err) { }
+window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith(TAB_PREFIX) && e.key !== tabKey && e.newValue) twinTabs();
+});
+
+const SECRET_WORDS = new Set(['#mirror', '#saikai', '#index', '#will', '#prescript', '#senpai']);
+function checkHash() {
+    const word = String(location.hash || '').toLowerCase();
+    if (SECRET_WORDS.has(word) && ach.unlock('secret_link')) holdMessage("You knew where to look. The Index did not say a word.", 4500);
+}
+checkHash();
+window.addEventListener('hashchange', checkHash);
+
+try {
+    const dark = window.matchMedia('(prefers-color-scheme: dark)');
+    const onTheme = () => {
+        rawStore.set('index_scheme', dark.matches ? 'dark' : 'light');
+        if (ach.unlock('theme_flip')) holdMessage("The light changed. The Index did not. It was already dark here.", 4500);
+    };
+    const scheme = dark.matches ? 'dark' : 'light';
+    const before = rawStore.get('index_scheme');
+    if (before && before !== scheme && ach.unlock('theme_flip')) bootSay("The light has changed since you were last here. The Index noticed.", 5000);
+    rawStore.set('index_scheme', scheme);
+    if (dark.addEventListener) dark.addEventListener('change', onTheme);
+    else if (dark.addListener) dark.addListener(onTheme);
+} catch (err) { }
+
+const shapeNow = () => (window.innerWidth >= window.innerHeight ? 'wide' : 'tall');
+let lastShape = shapeNow();
+let shapeTurns = 0;
+let shapeTimer;
+function checkShape() {
+    const now = shapeNow();
+    if (now === lastShape) return;
+    lastShape = now;
+    if (++shapeTurns >= 8) ach.unlock('rotate');
+}
+window.addEventListener('resize', () => { clearTimeout(shapeTimer); shapeTimer = setTimeout(checkShape, 200); });
+window.addEventListener('orientationchange', () => setTimeout(checkShape, 350));
+
+const heldKeys = new Map();
+const isModifierKey = (code) => /^(Shift|Control|Alt|Meta|OS|CapsLock|Fn)/.test(code);
+function handsCheck(count) {
+    if (count >= 3) ach.unlock('many_hands');
+    if (count >= 5) ach.unlock('five_hands');
+}
+document.addEventListener('keydown', (e) => {
+    const code = e.code || e.key;
+    if (e.repeat || !code || isModifierKey(code) || e.metaKey) return;
+    const now = Date.now();
+    heldKeys.set(code, now);
+    let n = 0;
+    heldKeys.forEach(t => { if (now - t <= 1500) n++; });
+    handsCheck(n);
+});
+document.addEventListener('keyup', (e) => { heldKeys.delete(e.code || e.key); });
+window.addEventListener('blur', () => heldKeys.clear());
+document.addEventListener('touchstart', (e) => handsCheck(e.touches ? e.touches.length : 0), { passive: true });
+
+const GRAB_HOLD_MS = 280;
+const GRAB_SLOP_PX = 10;
+const DRAG_PX = 150;
+const SPIN_DEGREES = 720;
+let grab = null;
+let carryX = 0;
+let carryY = 0;
+let suppressPeekUntil = 0;
+let suppressLogoClickUntil = 0;
+const clampNum = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+
+function setCarry(x, y) {
+    carryX = x;
+    carryY = y;
+    logoContainer.style.translate = `${x}px ${y}px`;
+}
+function currentCarry() {
+    try {
+        const t = getComputedStyle(logoContainer).translate;
+        if (t && t !== 'none') {
+            const [a, b] = t.split(' ').map(parseFloat);
+            if (Number.isFinite(a)) return { x: a, y: Number.isFinite(b) ? b : 0 };
+        }
+    } catch (err) { }
+    return { x: carryX, y: carryY };
+}
+function liftInsignia(g) {
+    if (g.grabbed) return;
+    g.grabbed = true;
+    logoContainer.classList.remove('returning');
+    logoContainer.classList.add('held');
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (err) { }
+    clearTimeout(tapTimer);
+    tapCount = 0;
+    showHint(isEvil ? "Do not move the glass." : "Please put the Index down.");
+}
+function endGrab() {
+    if (!grab) return;
+    const g = grab;
+    grab = null;
+    clearTimeout(g.timer);
+    try { logo.releasePointerCapture(g.id); } catch (err) { }
+    if (!g.grabbed) return;
+    suppressLogoClickUntil = Date.now() + 450;
+    suppressPeekUntil = Date.now() + 900;
+    logoContainer.classList.remove('held');
+    logoContainer.classList.add('returning');
+    setCarry(0, 0);
+    showHint('');
+    setTimeout(() => logoContainer.classList.remove('returning'), 700);
+    if (g.freshDrag) holdMessage(isEvil ? "You moved the glass. It will remember where it stood." : "Please do not move the Index. It was standing there first.", 4500);
+    else if (g.freshSpin) holdMessage("Round and round. The Index is dizzy.", 4000);
+}
+logo.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (grab) return;
+    const at = currentCarry();
+    const r = logoContainer.getBoundingClientRect();
+    grab = {
+        id: e.pointerId, startX: e.clientX, startY: e.clientY, origin: at,
+        home: { left: r.left - at.x, right: r.right - at.x, top: r.top - at.y, bottom: r.bottom - at.y },
+        grabbed: false, maxDist: 0, turned: 0, lastX: e.clientX, lastY: e.clientY, lastV: null,
+        dragSeen: false, freshDrag: false, freshSpin: false, timer: 0
+    };
+    suppressPeekUntil = Date.now() + 1500;
+    const mine = grab;
+    grab.timer = setTimeout(() => { if (grab === mine) liftInsignia(mine); }, GRAB_HOLD_MS);
+    try { logo.setPointerCapture(e.pointerId); } catch (err) { }
+});
+logo.addEventListener('pointermove', (e) => {
+    if (!grab || e.pointerId !== grab.id) return;
+    const dx = e.clientX - grab.startX;
+    const dy = e.clientY - grab.startY;
+    if (!grab.grabbed) {
+        if (Math.hypot(dx, dy) < GRAB_SLOP_PX) return;
+        liftInsignia(grab);
+    }
+    const x = clampNum(grab.origin.x + dx, -grab.home.left, window.innerWidth - grab.home.right);
+    const y = clampNum(grab.origin.y + dy, -grab.home.top, window.innerHeight - grab.home.bottom);
+    setCarry(x, y);
+    grab.maxDist = Math.max(grab.maxDist, Math.hypot(x - grab.origin.x, y - grab.origin.y));
+    const vx = e.clientX - grab.lastX;
+    const vy = e.clientY - grab.lastY;
+    if (Math.hypot(vx, vy) >= 6) {
+        if (grab.lastV) grab.turned += Math.atan2(grab.lastV.x * vy - grab.lastV.y * vx, grab.lastV.x * vx + grab.lastV.y * vy) * 180 / Math.PI;
+        grab.lastV = { x: vx, y: vy };
+        grab.lastX = e.clientX;
+        grab.lastY = e.clientY;
+    }
+    if (grab.maxDist >= DRAG_PX && !grab.dragSeen) {
+        grab.dragSeen = true;
+        if (ach.unlock('drag_logo')) grab.freshDrag = true;
+    }
+    if (Math.abs(grab.turned) >= SPIN_DEGREES) {
+        grab.turned = 0;
+        if (ach.unlock('rotate')) grab.freshSpin = true;
+    }
+});
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    logo.addEventListener(type, (e) => { if (grab && e.pointerId === grab.id) endGrab(); });
+}
+window.addEventListener('blur', endGrab);
+
+const LIGHTS_HOLD_MS = 1500;
+let lightsHold = null;
+let lightsOff = false;
+function cancelLights() {
+    if (lightsHold) { clearTimeout(lightsHold.timer); lightsHold = null; }
+}
+function toggleLights() {
+    lightsOff = !lightsOff;
+    document.body.classList.toggle('lights-off', lightsOff);
+    const fresh = ach.unlock('theme_flip');
+    holdMessage(lightsOff
+        ? (isEvil ? "The glass went dark. It sees you better this way." : "The lights are out. The Index does not need them.")
+        : (isEvil ? "The glass lit up again. It was never really dark." : "The lights are back. The Index pretends it did not notice."), fresh ? 4500 : 2500);
+}
+document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const el = e.target;
+    if (el && el.closest && el.closest('button, a, input, .ach-panel, .logo-container, .disclaimer')) return;
+   cancelLights();
+    lightsHold = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: setTimeout(() => { lightsHold = null; toggleLights(); }, LIGHTS_HOLD_MS) };
+});
+document.addEventListener('pointermove', (e) => {
+    if (lightsHold && e.pointerId === lightsHold.id && Math.hypot(e.clientX - lightsHold.x, e.clientY - lightsHold.y) > 14) cancelLights();
+});
+document.addEventListener('pointerup', cancelLights);
+document.addEventListener('pointercancel', cancelLights);
+
+function seasonNow(d = new Date()) {
+    const month = d.getMonth(), day = d.getDate();
+    if (month === 9 && day === 31) return 'halloween';
+    if (month === 11 && (day === 24 || day === 25)) return 'christmas';
+    if (month === 1 && day === 14) return 'valentine';
+    if (month === 3 && day === 1) return 'aprilfools';
+    if ((month === 11 && day === 31) || (month === 0 && day === 1)) return 'newyear';
+    return null;
+}
+const emojiIcon = (e) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">${e}</text></svg>`)}`;
+const SEASONS = {
+    halloween: {
+        icon: emojiIcon('\u{1F383}'),
+        hat: '<svg viewBox="0 0 100 100"><path d="M8 84Q50 98 92 84Q86 74 70 72L58 16Q54 6 48 12L34 70Q14 74 8 84Z" fill="#1d0f2e" stroke="#ff8a1f" stroke-width="2.5" stroke-linejoin="round"/><path d="M33 66Q52 75 70 68L68 57Q51 66 35 58Z" fill="#ff8a1f"/><rect x="47" y="57" width="9" height="11" rx="1" fill="#1d0f2e" stroke="#ffd36b" stroke-width="2"/></svg>',
+        hello: ["Happy Halloween. The Index has dressed for the occasion.", "Happy Halloween. The glass is wearing a mask. It is hard to say which of you is."],
+        fine: "The Index accepts no liability for ghosts, witches, or candy that mysteriously disappears.",
+        fx: 'ember'
+    },
+    christmas: {
+        icon: emojiIcon('\u{1F384}'),
+        hat: '<svg viewBox="0 0 100 100"><path d="M10 78C12 40 36 14 64 18C84 22 94 38 92 54C82 46 70 52 66 66L66 78Z" fill="#d6262c" stroke="#8f1217" stroke-width="2" stroke-linejoin="round"/><rect x="6" y="68" width="66" height="18" rx="9" fill="#f6f6f6" stroke="#cfcfcf" stroke-width="1.5"/><circle cx="90" cy="56" r="9" fill="#f6f6f6" stroke="#cfcfcf" stroke-width="1.5"/></svg>',
+        hello: ["Merry Christmas. The Index has been good this year. It cannot vouch for you.", "Merry Christmas. The mirror left a warm light on for you."],
+        fine: "The Index checked its list twice. It is not saying what it found.",
+        fx: 'snow'
+    },
+    valentine: {
+        icon: emojiIcon('\u{1F496}'),
+        hat: '<svg viewBox="0 0 100 100"><path d="M50 84C18 62 8 40 24 24C36 13 48 19 50 30C52 19 64 13 76 24C92 40 82 62 50 84Z" fill="#ff4d88" stroke="#b01e55" stroke-width="2" stroke-linejoin="round"/><path d="M30 34C32 28 38 26 42 29" fill="none" stroke="#ffd0e2" stroke-width="3"/></svg>',
+        hello: ["Happy Valentine's Day. The Index has been practicing affection. Results may vary.", "Happy Valentine's Day. The glass wants you to know someone is glad you exist."],
+        fine: "The Index accepts no responsibility for crushes, confessions or sudden poetry.",
+        fx: 'heart'
+    },
+    aprilfools: {
+        icon: emojiIcon('\u{1F921}'),
+        hat: '<svg viewBox="0 0 100 100"><path d="M12 80C6 54 8 32 14 16C24 34 34 48 42 60C44 40 47 24 50 10C53 24 56 40 58 60C66 48 76 34 86 16C92 32 94 54 88 80Z" fill="#7a3ff0" stroke="#3f1a9a" stroke-width="2" stroke-linejoin="round"/><path d="M42 60C44 40 47 24 50 10C53 24 56 40 58 60Z" fill="#ff9f1c"/><rect x="8" y="70" width="84" height="16" rx="8" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/><circle cx="14" cy="14" r="6" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/><circle cx="50" cy="8" r="6" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/><circle cx="86" cy="14" r="6" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/></svg>',
+        hello: ["Happy April Fools' Day. The Index and the mirror have swapped faces. Nothing else is wrong. Probably.", "Happy April Fools' Day. The glass has borrowed the Index's face. It insists nothing is different."],
+        fine: "The Index is not lying today. It is only rearranging the truth.",
+        fx: 'confetti',
+        colors: ['#ff4d6d', '#ffd23f', '#3ddc84', '#4dabff', '#b266ff', '#ff9f1c']
+    },
+    newyear: {
+        icon: emojiIcon('\u{1F386}'),
+        hat: '<svg viewBox="0 0 100 100"><path d="M50 10L82 82L18 82Z" fill="#ffcf4d" stroke="#b8860b" stroke-width="2" stroke-linejoin="round"/><path d="M38 52L62 52L66 62L34 62Z" fill="#ff5d8f"/><path d="M28 74L72 74L76 82L24 82Z" fill="#ff5d8f"/><circle cx="50" cy="9" r="7" fill="#f6f6f6" stroke="#cfcfcf" stroke-width="1.5"/></svg>',
+        hello: ["Happy New Year. The Index has counted down so you did not have to.", "Happy New Year. The glass has been waiting for this one all year."],
+        fine: "The Index makes no promises about resolutions. It only keeps score.",
+        fx: 'confetti',
+        colors: ['#ffd166', '#fff6dd', '#ff5d8f', '#c9d6ff', '#7ee8c1']
+    }
+};
+let adornEl = null;
+let fxEl = null;
+function buildSeasonDecor(next) {
+    if (adornEl && adornEl.remove) adornEl.remove();
+    if (fxEl && fxEl.remove) fxEl.remove();
+    adornEl = fxEl = null;
+    if (!next) return;
+    adornEl = document.createElement('div');
+    adornEl.className = 'season-adorn';
+    adornEl.setAttribute('aria-hidden', 'true');
+    adornEl.innerHTML = SEASONS[next].hat;
+    adornEl.addEventListener('animationend', (e) => { if (e.animationName === 'tapShake') adornEl.classList.remove('tap-shake'); });
+    (logo.parentElement || document.body).appendChild(adornEl);
+    fxEl = document.createElement('div');
+    const cfg = SEASONS[next];
+    fxEl.className = `season-fx fx-${cfg.fx || 'snow'}`;
+    fxEl.setAttribute('aria-hidden', 'true');
+    const palette = Array.isArray(cfg.colors) && cfg.colors.length ? cfg.colors : null;
+    for (let i = 0; i < 22; i++) {
+        const dot = document.createElement('i');
+        dot.style.setProperty('--x', `${(Math.random() * 100).toFixed(1)}%`);
+        dot.style.setProperty('--d', `${(7 + Math.random() * 9).toFixed(1)}s`);
+        dot.style.setProperty('--w', `${(-Math.random() * 14).toFixed(1)}s`);
+        dot.style.setProperty('--s', `${(0.2 + Math.random() * 0.4).toFixed(2)}rem`);
+        if (palette) dot.style.setProperty('--c', palette[i % palette.length]);
+        fxEl.appendChild(dot);
+    }
+    document.body.appendChild(fxEl);
+}
+function applySeason(announce) {
+    let next = null;
+    try { next = seasonNow(); } catch (err) { }
+    if (next === season) return;
+    season = next;
+    for (const name of Object.keys(SEASONS)) document.body.classList.toggle(`season-${name}`, next === name);
+    buildSeasonDecor(next);
+    setLogoImage(isEvil);
+    if (announce && next) {
+        glitchBurst(1400);
+        holdMessage(SEASONS[next].hello[isEvil ? 1 : 0], 5500);
+    }
+}
+applySeason(false);
+if (season) {
+    bootSay(SEASONS[season].hello[0], 5500);
+    if (!cutHit) {
+        lastDisclaimer = pickHolidayDisclaimer('normal', true) || SEASONS[season].fine;
+        disclaimerEl.textContent = lastDisclaimer;
+    }
+}
+
+if (bootMsg) holdMessage(bootMsg.text, bootMsg.ms);
 
 const baseDpr = window.devicePixelRatio || 1;
 const isTouchScreen = () => { try { return window.matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } };
